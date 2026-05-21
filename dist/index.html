@@ -431,8 +431,8 @@ try{
 
 // ==================== SUPABASE CONFIG ====================
 // Nilai diambil otomatis dari file .env oleh Vite saat dev/build
-const _SUPABASE_URL  = 'https://lmgzsfivhdoczbgoshyu.supabase.co';
-const _SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxtZ3pzZml2aGRvY3piZ29zaHl1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5NjU2NTQsImV4cCI6MjA5NDU0MTY1NH0.RxEztkIUOMtPDk90PrLbiKCitGA-5GlXAWWxiMxd36I';
+const _SUPABASE_URL  = '%VITE_SUPABASE_URL%';
+const _SUPABASE_KEY  = '%VITE_SUPABASE_ANON_KEY%';
 
 let _sb = null;
 let _sbSource = 'none';
@@ -650,6 +650,37 @@ async function uploadToSupabase(file, folder) {
     console.warn('Upload failed:', e);
     return null;
   }
+}
+
+async function handleAboutBannerUpload(input) {
+  const f = input && input.files ? input.files[0] : null;
+  if (!f) return;
+
+  const textInput = document.getElementById('f-aimg');
+  const blobUrl = URL.createObjectURL(f);
+  replaceAboutBannerPreview(blobUrl, f.type);
+
+  if (!_sb) {
+    toast('Supabase belum diatur. Upload cloud tidak aktif untuk Tentang Kami.');
+    return;
+  }
+
+  toast('Mengupload ke Supabase Storage...');
+  if (textInput) textInput.value = '';
+
+  const url = await uploadToSupabase(f, 'about');
+  if (!url) {
+    toast(`Upload gagal. ${_lastStorageError || 'Coba lagi atau cek koneksi Supabase.'}`);
+    return;
+  }
+
+  if (textInput) textInput.value = url;
+  replaceAboutBannerPreview(url, f.type);
+  D.about.image = url;
+  localStorage.setItem('arazack_data', JSON.stringify(D));
+  const syncOk = await syncToSupabase();
+  buildStore();
+  toast(syncOk ? 'Upload Tentang Kami berhasil dan tersimpan ke cloud.' : `File terupload, tetapi sync data gagal. ${_cloudSyncState.message}`);
 }
 
 function isVideoMedia(src) {
@@ -2118,12 +2149,88 @@ function renderACats(){
   <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">${D.categories.map(c=>`<div class="bg-white rounded-2xl overflow-hidden border border-bakery-100 card-h"><div class="aspect-[16/9] overflow-hidden"><img src="${c.image}" class="w-full h-full object-cover"></div><div class="p-5"><h4 class="font-serif text-lg text-choco-900">${c.name}</h4><p class="text-xs text-choco-400 mt-1">${c.count}</p><div class="mt-4 flex gap-2"><button onclick="editCat(${c.id})" class="flex-1 py-2 text-[10px] font-bold tracking-wider uppercase text-bakery-600 border border-bakery-200 rounded-lg hover:bg-bakery-50 flex items-center justify-center gap-1"><iconify-icon icon="mdi:pencil-outline" width="14"></iconify-icon>Edit</button><button onclick="cfDel('category',${c.id},'${c.name}')" class="py-2 px-3 text-[10px] font-bold tracking-wider uppercase text-red-500 border border-red-200 rounded-lg hover:bg-red-50"><iconify-icon icon="mdi:delete-outline" width="14"></iconify-icon></button></div></div></div>`).join('')}</div>`;
 }
 
+function renderHeroFloatingCardsAdmin(cards){
+  const items = Array.isArray(cards) ? cards : [];
+  if (!items.length) {
+    return `<div class="rounded-2xl border border-dashed border-bakery-200 bg-cream-50 px-4 py-5 text-sm text-choco-500">Belum ada gambar slide/floating di Hero. Tambahkan dari Live Editor jika diperlukan.</div>`;
+  }
+
+  return items.map((fc, idx) => {
+    const size = fc.size || 'md';
+    const bgType = fc.bgType || 'glass';
+    const blendMode = fc.blendMode || 'normal';
+    const rotate = Number.isFinite(Number(fc.rotate)) ? Number(fc.rotate) : 0;
+    return `<div class="rounded-2xl border border-bakery-100 p-4 sm:p-5 space-y-4 bg-cream-50/70">
+      <div class="flex items-center gap-3">
+        <div class="w-16 h-16 rounded-xl overflow-hidden border border-bakery-100 bg-white flex-shrink-0">
+          <img id="f-hfc-preview-${fc.id}" src="${esc(fc.image || '')}" alt="Frame ${idx + 1}" class="w-full h-full object-cover">
+        </div>
+        <div class="min-w-0">
+          <p class="text-sm font-semibold text-choco-900">Frame Hero ${idx + 1}</p>
+          <p class="text-[11px] text-choco-400">URL gambar ini dipakai untuk mode slide dan floating.</p>
+        </div>
+      </div>
+      <div>
+        <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">URL Gambar Frame</label>
+        <input id="f-hfc-img-${fc.id}" type="text" value="${esc(fc.image || '')}" oninput="document.getElementById('f-hfc-preview-${fc.id}').src=this.value||'about:blank'" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-white text-choco-900 inp text-sm" placeholder="https://...">
+      </div>
+      <div class="grid sm:grid-cols-3 gap-3">
+        <div>
+          <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Ukuran</label>
+          <select id="f-hfc-size-${fc.id}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-white text-choco-900 inp text-sm">
+            <option value="sm" ${size === 'sm' ? 'selected' : ''}>Kecil</option>
+            <option value="md" ${size === 'md' ? 'selected' : ''}>Sedang</option>
+            <option value="lg" ${size === 'lg' ? 'selected' : ''}>Besar</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Gaya Frame</label>
+          <select id="f-hfc-bg-${fc.id}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-white text-choco-900 inp text-sm">
+            <option value="glass" ${bgType === 'glass' ? 'selected' : ''}>Glass</option>
+            <option value="choco" ${bgType === 'choco' ? 'selected' : ''}>Choco</option>
+            <option value="solid" ${bgType === 'solid' ? 'selected' : ''}>Solid</option>
+            <option value="none" ${bgType === 'none' ? 'selected' : ''}>Tanpa Bingkai</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Rotasi</label>
+          <select id="f-hfc-rotate-${fc.id}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-white text-choco-900 inp text-sm">
+            <option value="0" ${rotate === 0 ? 'selected' : ''}>0</option>
+            <option value="-5" ${rotate === -5 ? 'selected' : ''}>-5</option>
+            <option value="5" ${rotate === 5 ? 'selected' : ''}>5</option>
+            <option value="-10" ${rotate === -10 ? 'selected' : ''}>-10</option>
+            <option value="10" ${rotate === 10 ? 'selected' : ''}>10</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Blend Mode</label>
+        <select id="f-hfc-blend-${fc.id}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-white text-choco-900 inp text-sm">
+          <option value="normal" ${blendMode === 'normal' ? 'selected' : ''}>Normal</option>
+          <option value="multiply" ${blendMode === 'multiply' ? 'selected' : ''}>Multiply</option>
+          <option value="screen" ${blendMode === 'screen' ? 'selected' : ''}>Screen</option>
+          <option value="overlay" ${blendMode === 'overlay' ? 'selected' : ''}>Overlay</option>
+          <option value="luminosity" ${blendMode === 'luminosity' ? 'selected' : ''}>Luminosity</option>
+          <option value="color-burn" ${blendMode === 'color-burn' ? 'selected' : ''}>Color Burn</option>
+        </select>
+      </div>
+    </div>`;
+  }).join('');
+}
+
 function renderAHero(){const h=D.hero;return `<div class="max-w-3xl"><div class="bg-white rounded-2xl p-6 sm:p-8 border border-bakery-100 space-y-5">
   <div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Baris 1</label><input id="f-h1" type="text" value="${esc(h.line1)}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp"></div>
   <div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Baris 2 (Highlight)</label><input id="f-h2" type="text" value="${esc(h.line2)}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp"></div>
   <div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Baris 3</label><input id="f-h3" type="text" value="${esc(h.line3)}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp"></div>
   <div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Deskripsi</label><textarea id="f-hdesc" rows="3" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp resize-none">${esc(h.desc)}</textarea></div>
   <div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Badge</label><input id="f-hbadge" type="text" value="${esc(h.badge)}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp"></div>
+  <div>
+    <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Mode Hero</label>
+    <select id="f-hlayout" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp text-sm">
+      <option value="floating" ${(h.layoutMode || 'floating') === 'floating' ? 'selected' : ''}>Floating Bebas</option>
+      <option value="sliding" ${(h.layoutMode || 'floating') === 'sliding' ? 'selected' : ''}>Slide Berjalan</option>
+    </select>
+  </div>
   <div>
     <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Ukuran Font Judul (Desktop - px)</label>
     <div class="flex items-center gap-3">
@@ -2161,6 +2268,21 @@ function renderAHero(){const h=D.hero;return `<div class="max-w-3xl"><div class=
         <input type="file" accept="image/*" onchange="const f=this.files[0];if(f){const r=new FileReader();r.onload=e=>{document.getElementById('f-himg').value=e.target.result;toast('Gambar berhasil dimuat! Klik Simpan di bawah.')};r.readAsDataURL(f)}" class="hidden">
       </label>
     </div>
+  </div>
+  <div class="rounded-2xl border border-bakery-100 p-4 sm:p-5 bg-white space-y-4">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div>
+        <h3 class="text-sm font-semibold text-choco-900">Gambar Slide / Floating Hero</h3>
+        <p class="text-[11px] text-choco-400 mt-1">Perubahan URL frame Hero di sini akan ikut tersimpan ke semua perangkat saat data berhasil sync.</p>
+      </div>
+      <button type="button" onclick="enterLiveEdit()" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-bakery-100 text-choco-700 hover:bg-bakery-200 text-[11px] font-bold tracking-[0.12em] uppercase rounded-xl transition-colors">
+        <iconify-icon icon="mdi:palette-outline" width="15"></iconify-icon>Buka Live Editor
+      </button>
+    </div>
+    <div class="space-y-4">
+      ${renderHeroFloatingCardsAdmin(h.floatingCards)}
+    </div>
+    <p class="text-[11px] text-choco-400">Tambah, hapus, atau geser posisi frame tetap bisa dilakukan dari Live Editor. Bagian ini fokus untuk memastikan URL gambar slide/floating ikut tersimpan saat Anda klik Simpan Hero Banner.</p>
   </div>
   <div class="grid grid-cols-2 gap-4"><div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Tombol 1</label><input id="f-hb1" type="text" value="${esc(h.btn1)}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp"></div><div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Tombol 2</label><input id="f-hb2" type="text" value="${esc(h.btn2)}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp"></div></div>
   <button onclick="saveHero()" class="w-full py-3.5 bg-choco-900 text-cream-100 text-[11px] font-bold tracking-[0.15em] uppercase rounded-xl hover:bg-choco-800 flex items-center justify-center gap-2"><iconify-icon icon="mdi:content-save-outline" width="16"></iconify-icon>Simpan Hero Banner</button>
@@ -2219,44 +2341,7 @@ function renderAAbout(){const a=D.about;
 
       <label class="flex-shrink-0 cursor-pointer inline-flex items-center gap-2 px-4 py-3 bg-bakery-500 text-white hover:bg-bakery-600 text-xs font-bold tracking-wider uppercase rounded-xl transition-colors shadow-sm">
         <iconify-icon icon="mdi:cloud-upload-outline" width="16"></iconify-icon>Upload File
-        <input type="file" accept="image/*,video/mp4,video/webm,video/ogg,video/quicktime" onchange="
-          const f = this.files[0];
-          if(!f) return;
-          // Tampilkan preview langsung via blob URL (animasi pasti jalan)
-          const blobUrl = URL.createObjectURL(f);
-          replaceAboutBannerPreview(blobUrl, f.type);
-
-          if(_sb){
-            // ✅ Supabase aktif: upload ke Storage → dapat URL permanen
-            toast('Mengupload ke Supabase Storage...');
-            document.getElementById('f-aimg').value = '';
-            uploadToSupabase(f, 'about').then(url => {
-              if(url){
-                document.getElementById('f-aimg').value = url;
-                replaceAboutBannerPreview(url, f.type);
-                D.about.image = url;
-                saveD();
-                buildStore();
-                toast('Upload berhasil! File tersimpan di cloud. Klik Simpan ✓');
-              } else {
-                toast(`Upload gagal. ${_lastStorageError || 'Coba lagi atau cek koneksi Supabase.'}`);
-              }
-            });
-          } else {
-            // ⚠️ Supabase belum dikonfigurasi: fallback ke base64
-            toast('⚠️ Supabase belum diatur. Menyimpan sementara (ukuran terbatas)...');
-            const r = new FileReader();
-            r.onload = e => {
-              const src = e.target.result;
-              document.getElementById('f-aimg').value = src;
-              replaceAboutBannerPreview(src, f.type);
-              D.about.image = src;
-              saveD();
-              buildStore();
-            };
-            r.readAsDataURL(f);
-          }
-        " class="hidden">
+        <input id="about-upload-input" type="file" accept="image/*,video/mp4,video/webm,video/ogg,video/quicktime" class="hidden">
       </label>
     </div>
     ${_sb ? `<p class="text-[10px] text-green-600 mt-2 flex items-center gap-1"><iconify-icon icon="mdi:cloud-check" width="12"></iconify-icon>Supabase aktif — file diupload ke cloud, tidak terbatas ukuran.</p>` : `<p class="text-[10px] text-orange-500 mt-2 flex items-center gap-1"><iconify-icon icon="mdi:alert-circle-outline" width="12"></iconify-icon>Supabase belum diatur. Pergi ke Pengaturan → Supabase untuk mengaktifkan upload cloud.</p>`}
@@ -2452,7 +2537,40 @@ function clearSupabaseConfigFromSettings() {
 // ==================== SAVE FUNCTIONS ====================
 function gv(id){return document.getElementById(id)?.value||''}
 function esc(s){return String(s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;')}
-function saveHero(){D.hero={...D.hero,line1:gv('f-h1'),line2:gv('f-h2'),line3:gv('f-h3'),desc:gv('f-hdesc'),badge:gv('f-hbadge'),image:gv('f-himg'),btn1:gv('f-hb1'),btn2:gv('f-hb2'),fontSize:parseInt(document.getElementById('f-hfs')?.value)||96,descFontSize:parseInt(document.getElementById('f-hdfs')?.value)||18,lineHeight:parseFloat(document.getElementById('f-hlh')?.value)||0.95,itemSpacing:parseInt(document.getElementById('f-hsp')?.value)||24};saveD();buildStore();toast('Hero banner disimpan')}
+function collectHeroFloatingCardsFromAdmin() {
+  const currentCards = Array.isArray(D.hero?.floatingCards) ? D.hero.floatingCards : [];
+  return currentCards.map(card => ({
+    ...card,
+    image: gv(`f-hfc-img-${card.id}`) || card.image || '',
+    size: document.getElementById(`f-hfc-size-${card.id}`)?.value || card.size || 'md',
+    bgType: document.getElementById(`f-hfc-bg-${card.id}`)?.value || card.bgType || 'glass',
+    blendMode: document.getElementById(`f-hfc-blend-${card.id}`)?.value || card.blendMode || 'normal',
+    rotate: parseInt(document.getElementById(`f-hfc-rotate-${card.id}`)?.value) || 0
+  }));
+}
+
+function saveHero(){
+  D.hero={
+    ...D.hero,
+    line1:gv('f-h1'),
+    line2:gv('f-h2'),
+    line3:gv('f-h3'),
+    desc:gv('f-hdesc'),
+    badge:gv('f-hbadge'),
+    image:gv('f-himg'),
+    btn1:gv('f-hb1'),
+    btn2:gv('f-hb2'),
+    layoutMode:document.getElementById('f-hlayout')?.value||D.hero.layoutMode||'floating',
+    floatingCards:collectHeroFloatingCardsFromAdmin(),
+    fontSize:parseInt(document.getElementById('f-hfs')?.value)||96,
+    descFontSize:parseInt(document.getElementById('f-hdfs')?.value)||18,
+    lineHeight:parseFloat(document.getElementById('f-hlh')?.value)||0.95,
+    itemSpacing:parseInt(document.getElementById('f-hsp')?.value)||24
+  };
+  saveD();
+  buildStore();
+  toast('Hero banner dan gambar slide/floating disimpan');
+}
 function saveAbout(){D.about={subtitle:gv('f-asub'),p1:gv('f-ap1'),p2:gv('f-ap2'),image:gv('f-aimg'),years:gv('f-ayr'),yearsLabel:gv('f-ayrl')};saveD();buildStore();toast('Tentang Kami disimpan')}
 function saveOffer(){D.offer={enabled:document.getElementById('f-oen')?.checked,title:gv('f-oti'),highlight:gv('f-ohl'),desc:gv('f-ode'),btn:gv('f-obt'),image:gv('f-oim')};saveD();buildStore();toast('Penawaran disimpan')}
 function saveContact(){D.contact={...D.contact,address:gv('f-cad'),phone:gv('f-cph'),whatsapp:gv('f-cwa'),hours1:gv('f-cj1'),hours2:gv('f-cj2'),instagram:gv('f-cig')};saveD();buildStore();toast('Kontak disimpan')}

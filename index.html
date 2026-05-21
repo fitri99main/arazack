@@ -356,7 +356,8 @@
 // ==================== DEFAULT DATA ====================
 const DEF={
   brand:{name:'Ara&Zack',tagline:'Bakehouse'},
-  hero:{line1:'The Art of',line2:'Premium',line3:'Delight',desc:'Setiap gigitan adalah karya seni. Kami menghadirkan kelezatan premium dengan bahan pilihan terbaik, dibuat dengan cinta dan keahlian artisan.',badge:'Premium Artisan Bakery',image:'https://z-cdn-media.chatglm.cn/files/8edb6fa1-07ba-4160-af89-e994966e0a4f.jpg?auth_key=1879098274-c8c58ef20ba74cd6b7114ac1d98910ab-0-6f2640723b8007c8141cbf68b48a4fc9',btn1:'Lihat Menu',btn2:'Tentang Kami',stat1:{val:'12+',label:'Tahun'},stat2:{val:'50+',label:'Menu'},stat3:{val:'10K+',label:'Pelanggan'},floatingCards:[{id:1,image:'https://z-cdn-media.chatglm.cn/files/b4b7cac5-ea7e-417f-912c-fe304e31743b.jpg?auth_key=1879098274-279a39f1f73946e2a30c970adfe92bcf-0-82d70063c76b5c9e9cf79a10be05b497',top:20,left:70,size:'md',bgType:'glass',rotate:-5},{id:2,image:'https://z-cdn-media.chatglm.cn/files/f65f40ee-b528-4cb6-8c7b-80cd15f54894.jpg?auth_key=1879098274-855e6204ab0249048065b264e41c2db5-0-e058392effcded7b6b966cea16b17047',top:50,left:64,size:'sm',bgType:'choco',rotate:4}]},
+  hero:{line1:'The Art of',line2:'Premium',line3:'Delight',desc:'Setiap gigitan adalah karya seni. Kami menghadirkan kelezatan premium dengan bahan pilihan terbaik, dibuat dengan cinta dan keahlian artisan.',badge:'Premium Artisan Bakery',image:'https://z-cdn-media.chatglm.cn/files/8edb6fa1-07ba-4160-af89-e994966e0a4f.jpg?auth_key=1879098274-c8c58ef20ba74cd6b7114ac1d98910ab-0-6f2640723b8007c8141cbf68b48a4fc9',btn1:'Lihat Menu',btn2:'Tentang Kami',stat1:{val:'12+',label:'Tahun'},stat2:{val:'50+',label:'Menu'},stat3:{val:'10K+',label:'Pelanggan'},layoutMode:'floating',fontSize:96,descFontSize:18,lineHeight:0.95,itemSpacing:24,floatingCards:[{id:1,image:'https://z-cdn-media.chatglm.cn/files/b4b7cac5-ea7e-417f-912c-fe304e31743b.jpg?auth_key=1879098274-279a39f1f73946e2a30c970adfe92bcf-0-82d70063c76b5c9e9cf79a10be05b497',top:20,left:70,size:'md',bgType:'glass',blendMode:'normal',rotate:-5},{id:2,image:'https://z-cdn-media.chatglm.cn/files/f65f40ee-b528-4cb6-8c7b-80cd15f54894.jpg?auth_key=1879098274-855e6204ab0249048065b264e41c2db5-0-e058392effcded7b6b966cea16b17047',top:50,left:64,size:'sm',bgType:'choco',blendMode:'normal',rotate:4}]},
+
   categories:[
     {id:1,name:'Premium Cakes',slug:'cake',count:'12 Varian',image:'https://z-cdn-media.chatglm.cn/files/b4b7cac5-ea7e-417f-912c-fe304e31743b.jpg?auth_key=1879098274-279a39f1f73946e2a30c970adfe92bcf-0-82d70063c76b5c9e9cf79a10be05b497'},
     {id:2,name:'Artisan Pastry',slug:'pastry',count:'18 Varian',image:'https://z-cdn-media.chatglm.cn/files/f65f40ee-b528-4cb6-8c7b-80cd15f54894.jpg?auth_key=1879098274-855e6204ab0249048065b264e41c2db5-0-e058392effcded7b6b966cea16b17047'},
@@ -396,8 +397,18 @@ function mergeSiteData(base, incoming) {
   }
 
   const result = {};
+  // Merge semua key dari base (default)
   for (const key of Object.keys(base)) {
     result[key] = mergeSiteData(base[key], incoming && typeof incoming === 'object' ? incoming[key] : undefined);
+  }
+  // Tambahkan key dari incoming yang TIDAK ADA di base
+  // (misal: layoutMode, fontSize, descFontSize, lineHeight, itemSpacing, blendMode, dll)
+  if (incoming && typeof incoming === 'object' && !Array.isArray(incoming)) {
+    for (const key of Object.keys(incoming)) {
+      if (!(key in result)) {
+        result[key] = incoming[key];
+      }
+    }
   }
   return result;
 }
@@ -1337,8 +1348,6 @@ function buildStore(){
   }, 0);
 
   let html='';
-
-  // HERO
   const layoutMode = D.hero.layoutMode || 'floating';
   const floatingCards = D.hero.floatingCards || [];
   let floatingCardsHtml = '';
@@ -1346,7 +1355,8 @@ function buildStore(){
   let vertItems = '';
 
   if (layoutMode === 'sliding') {
-    const repeated = [...floatingCards, ...floatingCards, ...floatingCards, ...floatingCards];
+    // Deep copy agar tidak memutasi data asli D.hero.floatingCards
+    const repeated = [...floatingCards, ...floatingCards, ...floatingCards, ...floatingCards].map(fc => ({...fc}));
     
     // Horizontal track items for mobile
     horizItems = repeated.map((fc, idx) => {
@@ -1458,8 +1468,8 @@ function buildStore(){
       </div>
     `;
   } else {
-    // Normal Floating Mode
-    floatingCardsHtml = floatingCards.map(fc => {
+    // Normal Floating Mode - deep copy agar tidak memutasi data asli D.hero.floatingCards
+    floatingCardsHtml = floatingCards.map(fc => ({...fc})).map(fc => {
       if (!fc.image && fc.productId) {
         const p = D.products.find(x => x.id === fc.productId);
         fc.image = p ? p.image : 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=400&q=80';
@@ -2149,12 +2159,88 @@ function renderACats(){
   <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">${D.categories.map(c=>`<div class="bg-white rounded-2xl overflow-hidden border border-bakery-100 card-h"><div class="aspect-[16/9] overflow-hidden"><img src="${c.image}" class="w-full h-full object-cover"></div><div class="p-5"><h4 class="font-serif text-lg text-choco-900">${c.name}</h4><p class="text-xs text-choco-400 mt-1">${c.count}</p><div class="mt-4 flex gap-2"><button onclick="editCat(${c.id})" class="flex-1 py-2 text-[10px] font-bold tracking-wider uppercase text-bakery-600 border border-bakery-200 rounded-lg hover:bg-bakery-50 flex items-center justify-center gap-1"><iconify-icon icon="mdi:pencil-outline" width="14"></iconify-icon>Edit</button><button onclick="cfDel('category',${c.id},'${c.name}')" class="py-2 px-3 text-[10px] font-bold tracking-wider uppercase text-red-500 border border-red-200 rounded-lg hover:bg-red-50"><iconify-icon icon="mdi:delete-outline" width="14"></iconify-icon></button></div></div></div>`).join('')}</div>`;
 }
 
+function renderHeroFloatingCardsAdmin(cards){
+  const items = Array.isArray(cards) ? cards : [];
+  if (!items.length) {
+    return `<div class="rounded-2xl border border-dashed border-bakery-200 bg-cream-50 px-4 py-5 text-sm text-choco-500">Belum ada gambar slide/floating di Hero. Tambahkan dari Live Editor jika diperlukan.</div>`;
+  }
+
+  return items.map((fc, idx) => {
+    const size = fc.size || 'md';
+    const bgType = fc.bgType || 'glass';
+    const blendMode = fc.blendMode || 'normal';
+    const rotate = Number.isFinite(Number(fc.rotate)) ? Number(fc.rotate) : 0;
+    return `<div class="rounded-2xl border border-bakery-100 p-4 sm:p-5 space-y-4 bg-cream-50/70">
+      <div class="flex items-center gap-3">
+        <div class="w-16 h-16 rounded-xl overflow-hidden border border-bakery-100 bg-white flex-shrink-0">
+          <img id="f-hfc-preview-${fc.id}" src="${esc(fc.image || '')}" alt="Frame ${idx + 1}" class="w-full h-full object-cover">
+        </div>
+        <div class="min-w-0">
+          <p class="text-sm font-semibold text-choco-900">Frame Hero ${idx + 1}</p>
+          <p class="text-[11px] text-choco-400">URL gambar ini dipakai untuk mode slide dan floating.</p>
+        </div>
+      </div>
+      <div>
+        <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">URL Gambar Frame</label>
+        <input id="f-hfc-img-${fc.id}" type="text" value="${esc(fc.image || '')}" oninput="document.getElementById('f-hfc-preview-${fc.id}').src=this.value||'about:blank'" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-white text-choco-900 inp text-sm" placeholder="https://...">
+      </div>
+      <div class="grid sm:grid-cols-3 gap-3">
+        <div>
+          <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Ukuran</label>
+          <select id="f-hfc-size-${fc.id}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-white text-choco-900 inp text-sm">
+            <option value="sm" ${size === 'sm' ? 'selected' : ''}>Kecil</option>
+            <option value="md" ${size === 'md' ? 'selected' : ''}>Sedang</option>
+            <option value="lg" ${size === 'lg' ? 'selected' : ''}>Besar</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Gaya Frame</label>
+          <select id="f-hfc-bg-${fc.id}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-white text-choco-900 inp text-sm">
+            <option value="glass" ${bgType === 'glass' ? 'selected' : ''}>Glass</option>
+            <option value="choco" ${bgType === 'choco' ? 'selected' : ''}>Choco</option>
+            <option value="solid" ${bgType === 'solid' ? 'selected' : ''}>Solid</option>
+            <option value="none" ${bgType === 'none' ? 'selected' : ''}>Tanpa Bingkai</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Rotasi</label>
+          <select id="f-hfc-rotate-${fc.id}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-white text-choco-900 inp text-sm">
+            <option value="0" ${rotate === 0 ? 'selected' : ''}>0</option>
+            <option value="-5" ${rotate === -5 ? 'selected' : ''}>-5</option>
+            <option value="5" ${rotate === 5 ? 'selected' : ''}>5</option>
+            <option value="-10" ${rotate === -10 ? 'selected' : ''}>-10</option>
+            <option value="10" ${rotate === 10 ? 'selected' : ''}>10</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Blend Mode</label>
+        <select id="f-hfc-blend-${fc.id}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-white text-choco-900 inp text-sm">
+          <option value="normal" ${blendMode === 'normal' ? 'selected' : ''}>Normal</option>
+          <option value="multiply" ${blendMode === 'multiply' ? 'selected' : ''}>Multiply</option>
+          <option value="screen" ${blendMode === 'screen' ? 'selected' : ''}>Screen</option>
+          <option value="overlay" ${blendMode === 'overlay' ? 'selected' : ''}>Overlay</option>
+          <option value="luminosity" ${blendMode === 'luminosity' ? 'selected' : ''}>Luminosity</option>
+          <option value="color-burn" ${blendMode === 'color-burn' ? 'selected' : ''}>Color Burn</option>
+        </select>
+      </div>
+    </div>`;
+  }).join('');
+}
+
 function renderAHero(){const h=D.hero;return `<div class="max-w-3xl"><div class="bg-white rounded-2xl p-6 sm:p-8 border border-bakery-100 space-y-5">
   <div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Baris 1</label><input id="f-h1" type="text" value="${esc(h.line1)}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp"></div>
   <div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Baris 2 (Highlight)</label><input id="f-h2" type="text" value="${esc(h.line2)}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp"></div>
   <div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Baris 3</label><input id="f-h3" type="text" value="${esc(h.line3)}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp"></div>
   <div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Deskripsi</label><textarea id="f-hdesc" rows="3" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp resize-none">${esc(h.desc)}</textarea></div>
   <div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Badge</label><input id="f-hbadge" type="text" value="${esc(h.badge)}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp"></div>
+  <div>
+    <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Mode Hero</label>
+    <select id="f-hlayout" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp text-sm">
+      <option value="floating" ${(h.layoutMode || 'floating') === 'floating' ? 'selected' : ''}>Floating Bebas</option>
+      <option value="sliding" ${(h.layoutMode || 'floating') === 'sliding' ? 'selected' : ''}>Slide Berjalan</option>
+    </select>
+  </div>
   <div>
     <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Ukuran Font Judul (Desktop - px)</label>
     <div class="flex items-center gap-3">
@@ -2192,6 +2278,21 @@ function renderAHero(){const h=D.hero;return `<div class="max-w-3xl"><div class=
         <input type="file" accept="image/*" onchange="const f=this.files[0];if(f){const r=new FileReader();r.onload=e=>{document.getElementById('f-himg').value=e.target.result;toast('Gambar berhasil dimuat! Klik Simpan di bawah.')};r.readAsDataURL(f)}" class="hidden">
       </label>
     </div>
+  </div>
+  <div class="rounded-2xl border border-bakery-100 p-4 sm:p-5 bg-white space-y-4">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div>
+        <h3 class="text-sm font-semibold text-choco-900">Gambar Slide / Floating Hero</h3>
+        <p class="text-[11px] text-choco-400 mt-1">Perubahan URL frame Hero di sini akan ikut tersimpan ke semua perangkat saat data berhasil sync.</p>
+      </div>
+      <button type="button" onclick="enterLiveEdit()" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-bakery-100 text-choco-700 hover:bg-bakery-200 text-[11px] font-bold tracking-[0.12em] uppercase rounded-xl transition-colors">
+        <iconify-icon icon="mdi:palette-outline" width="15"></iconify-icon>Buka Live Editor
+      </button>
+    </div>
+    <div class="space-y-4">
+      ${renderHeroFloatingCardsAdmin(h.floatingCards)}
+    </div>
+    <p class="text-[11px] text-choco-400">Tambah, hapus, atau geser posisi frame tetap bisa dilakukan dari Live Editor. Bagian ini fokus untuk memastikan URL gambar slide/floating ikut tersimpan saat Anda klik Simpan Hero Banner.</p>
   </div>
   <div class="grid grid-cols-2 gap-4"><div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Tombol 1</label><input id="f-hb1" type="text" value="${esc(h.btn1)}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp"></div><div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Tombol 2</label><input id="f-hb2" type="text" value="${esc(h.btn2)}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp"></div></div>
   <button onclick="saveHero()" class="w-full py-3.5 bg-choco-900 text-cream-100 text-[11px] font-bold tracking-[0.15em] uppercase rounded-xl hover:bg-choco-800 flex items-center justify-center gap-2"><iconify-icon icon="mdi:content-save-outline" width="16"></iconify-icon>Simpan Hero Banner</button>
@@ -2446,7 +2547,40 @@ function clearSupabaseConfigFromSettings() {
 // ==================== SAVE FUNCTIONS ====================
 function gv(id){return document.getElementById(id)?.value||''}
 function esc(s){return String(s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;')}
-function saveHero(){D.hero={...D.hero,line1:gv('f-h1'),line2:gv('f-h2'),line3:gv('f-h3'),desc:gv('f-hdesc'),badge:gv('f-hbadge'),image:gv('f-himg'),btn1:gv('f-hb1'),btn2:gv('f-hb2'),fontSize:parseInt(document.getElementById('f-hfs')?.value)||96,descFontSize:parseInt(document.getElementById('f-hdfs')?.value)||18,lineHeight:parseFloat(document.getElementById('f-hlh')?.value)||0.95,itemSpacing:parseInt(document.getElementById('f-hsp')?.value)||24};saveD();buildStore();toast('Hero banner disimpan')}
+function collectHeroFloatingCardsFromAdmin() {
+  const currentCards = Array.isArray(D.hero?.floatingCards) ? D.hero.floatingCards : [];
+  return currentCards.map(card => ({
+    ...card,
+    image: gv(`f-hfc-img-${card.id}`) || card.image || '',
+    size: document.getElementById(`f-hfc-size-${card.id}`)?.value || card.size || 'md',
+    bgType: document.getElementById(`f-hfc-bg-${card.id}`)?.value || card.bgType || 'glass',
+    blendMode: document.getElementById(`f-hfc-blend-${card.id}`)?.value || card.blendMode || 'normal',
+    rotate: parseInt(document.getElementById(`f-hfc-rotate-${card.id}`)?.value) || 0
+  }));
+}
+
+function saveHero(){
+  D.hero={
+    ...D.hero,
+    line1:gv('f-h1'),
+    line2:gv('f-h2'),
+    line3:gv('f-h3'),
+    desc:gv('f-hdesc'),
+    badge:gv('f-hbadge'),
+    image:gv('f-himg'),
+    btn1:gv('f-hb1'),
+    btn2:gv('f-hb2'),
+    layoutMode:document.getElementById('f-hlayout')?.value||D.hero.layoutMode||'floating',
+    floatingCards:collectHeroFloatingCardsFromAdmin(),
+    fontSize:parseInt(document.getElementById('f-hfs')?.value)||96,
+    descFontSize:parseInt(document.getElementById('f-hdfs')?.value)||18,
+    lineHeight:parseFloat(document.getElementById('f-hlh')?.value)||0.95,
+    itemSpacing:parseInt(document.getElementById('f-hsp')?.value)||24
+  };
+  saveD();
+  buildStore();
+  toast('Hero banner dan gambar slide/floating disimpan');
+}
 function saveAbout(){D.about={subtitle:gv('f-asub'),p1:gv('f-ap1'),p2:gv('f-ap2'),image:gv('f-aimg'),years:gv('f-ayr'),yearsLabel:gv('f-ayrl')};saveD();buildStore();toast('Tentang Kami disimpan')}
 function saveOffer(){D.offer={enabled:document.getElementById('f-oen')?.checked,title:gv('f-oti'),highlight:gv('f-ohl'),desc:gv('f-ode'),btn:gv('f-obt'),image:gv('f-oim')};saveD();buildStore();toast('Penawaran disimpan')}
 function saveContact(){D.contact={...D.contact,address:gv('f-cad'),phone:gv('f-cph'),whatsapp:gv('f-cwa'),hours1:gv('f-cj1'),hours2:gv('f-cj2'),instagram:gv('f-cig')};saveD();buildStore();toast('Kontak disimpan')}
@@ -2829,7 +2963,7 @@ function exitLiveEdit() {
   // Reload current data
   try {
     const s = localStorage.getItem('arazack_data');
-    D = s ? JSON.parse(s) : JSON.parse(JSON.stringify(DEF));
+    D = s ? normalizeSiteData(JSON.parse(s)) : cloneDefaultData();
   } catch(e) {}
   
   // Go back to Admin view
