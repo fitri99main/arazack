@@ -263,8 +263,8 @@
     <div class="max-w-7xl mx-auto px-5 sm:px-8 flex items-center justify-between h-16 sm:h-20">
       <div class="flex items-center gap-2 sm:gap-4">
         <a href="#" class="flex items-center gap-2 group" onclick="event.preventDefault()">
-          <div class="w-9 h-9 rounded-full bg-bakery-500 flex items-center justify-center transition-transform duration-500 group-hover:rotate-12"><iconify-icon icon="mdi:cupcake" width="20" style="color:white"></iconify-icon></div>
-          <div class="leading-none"><span class="logo-text font-serif text-lg sm:text-xl font-semibold tracking-tight transition-colors duration-300">Ara&Zack</span><span class="block text-[9px] tracking-[0.25em] uppercase text-bakery-500 font-semibold">Bakehouse</span></div>
+          <div id="nav-logo-container" class="w-9 h-9 rounded-full overflow-hidden bg-bakery-500 flex items-center justify-center transition-transform duration-500 group-hover:rotate-12"><iconify-icon icon="mdi:cupcake" width="20" style="color:white"></iconify-icon></div>
+          <div class="leading-none"><span id="nav-brand-name" class="logo-text font-serif text-lg sm:text-xl font-semibold tracking-tight transition-colors duration-300">Ara&Zack</span><span id="nav-brand-tagline" class="block text-[9px] tracking-[0.25em] uppercase text-bakery-500 font-semibold">Bakehouse</span></div>
         </a>
         <div id="nav-status-container"></div>
       </div>
@@ -325,7 +325,7 @@
   <div id="a-overlay" class="fixed inset-0 bg-black/30 z-40 hidden lg:hidden" onclick="document.getElementById('a-side').classList.remove('open');this.classList.add('hidden')"></div>
 
   <aside id="a-side" class="a-side fixed top-0 left-0 bottom-0 bg-white border-r border-bakery-100 z-50 flex flex-col">
-    <div class="p-5 border-b border-bakery-100"><div class="flex items-center gap-2.5"><div class="w-9 h-9 rounded-full bg-bakery-500 flex items-center justify-center"><iconify-icon icon="mdi:cupcake" width="18" style="color:white"></iconify-icon></div><div><span class="font-serif text-base font-semibold text-choco-900">Ara&Zack</span><span class="block text-[8px] tracking-[0.3em] uppercase text-bakery-500 font-bold -mt-0.5">Admin Panel</span></div></div></div>
+    <div class="p-5 border-b border-bakery-100"><div class="flex items-center gap-2.5"><div id="admin-logo-container" class="w-9 h-9 rounded-full overflow-hidden bg-bakery-500 flex items-center justify-center"><iconify-icon icon="mdi:cupcake" width="18" style="color:white"></iconify-icon></div><div><span id="admin-brand-name" class="font-serif text-base font-semibold text-choco-900">Ara&Zack</span><span class="block text-[8px] tracking-[0.3em] uppercase text-bakery-500 font-bold -mt-0.5">Admin Panel</span></div></div></div>
     <nav class="flex-1 py-4 overflow-y-auto" id="a-nav"></nav>
     <div class="p-4 border-t border-bakery-100"><div class="flex items-center gap-3"><div class="w-9 h-9 rounded-full bg-bakery-200 flex items-center justify-center"><span class="text-xs font-bold text-bakery-600">AZ</span></div><div class="flex-1"><p class="text-sm font-medium text-choco-800">Admin</p><p class="text-[10px] text-choco-300">Super Admin</p></div></div></div>
   </aside>
@@ -355,8 +355,9 @@
 <script>
 // ==================== DEFAULT DATA ====================
 const DEF={
-  brand:{name:'Ara&Zack',tagline:'Bakehouse'},
-  hero:{line1:'The Art of',line2:'Premium',line3:'Delight',desc:'Setiap gigitan adalah karya seni. Kami menghadirkan kelezatan premium dengan bahan pilihan terbaik, dibuat dengan cinta dan keahlian artisan.',badge:'Premium Artisan Bakery',image:'https://z-cdn-media.chatglm.cn/files/8edb6fa1-07ba-4160-af89-e994966e0a4f.jpg?auth_key=1879098274-c8c58ef20ba74cd6b7114ac1d98910ab-0-6f2640723b8007c8141cbf68b48a4fc9',btn1:'Lihat Menu',btn2:'Tentang Kami',stat1:{val:'12+',label:'Tahun'},stat2:{val:'50+',label:'Menu'},stat3:{val:'10K+',label:'Pelanggan'},floatingCards:[{id:1,image:'https://z-cdn-media.chatglm.cn/files/b4b7cac5-ea7e-417f-912c-fe304e31743b.jpg?auth_key=1879098274-279a39f1f73946e2a30c970adfe92bcf-0-82d70063c76b5c9e9cf79a10be05b497',top:20,left:70,size:'md',bgType:'glass',rotate:-5},{id:2,image:'https://z-cdn-media.chatglm.cn/files/f65f40ee-b528-4cb6-8c7b-80cd15f54894.jpg?auth_key=1879098274-855e6204ab0249048065b264e41c2db5-0-e058392effcded7b6b966cea16b17047',top:50,left:64,size:'sm',bgType:'choco',rotate:4}]},
+  brand:{name:'Ara&Zack',tagline:'Bakehouse',logo:''},
+  hero:{line1:'The Art of',line2:'Premium',line3:'Delight',desc:'Setiap gigitan adalah karya seni. Kami menghadirkan kelezatan premium dengan bahan pilihan terbaik, dibuat dengan cinta dan keahlian artisan.',badge:'Premium Artisan Bakery',image:'https://z-cdn-media.chatglm.cn/files/8edb6fa1-07ba-4160-af89-e994966e0a4f.jpg?auth_key=1879098274-c8c58ef20ba74cd6b7114ac1d98910ab-0-6f2640723b8007c8141cbf68b48a4fc9',btn1:'Lihat Menu',btn2:'Tentang Kami',stat1:{val:'12+',label:'Tahun'},stat2:{val:'50+',label:'Menu'},stat3:{val:'10K+',label:'Pelanggan'},layoutMode:'floating',fontSize:96,descFontSize:18,lineHeight:0.95,itemSpacing:24,floatingCards:[{id:1,image:'https://z-cdn-media.chatglm.cn/files/b4b7cac5-ea7e-417f-912c-fe304e31743b.jpg?auth_key=1879098274-279a39f1f73946e2a30c970adfe92bcf-0-82d70063c76b5c9e9cf79a10be05b497',top:20,left:70,size:'md',bgType:'glass',blendMode:'normal',rotate:-5},{id:2,image:'https://z-cdn-media.chatglm.cn/files/f65f40ee-b528-4cb6-8c7b-80cd15f54894.jpg?auth_key=1879098274-855e6204ab0249048065b264e41c2db5-0-e058392effcded7b6b966cea16b17047',top:50,left:64,size:'sm',bgType:'choco',blendMode:'normal',rotate:4}]},
+
   categories:[
     {id:1,name:'Premium Cakes',slug:'cake',count:'12 Varian',image:'https://z-cdn-media.chatglm.cn/files/b4b7cac5-ea7e-417f-912c-fe304e31743b.jpg?auth_key=1879098274-279a39f1f73946e2a30c970adfe92bcf-0-82d70063c76b5c9e9cf79a10be05b497'},
     {id:2,name:'Artisan Pastry',slug:'pastry',count:'18 Varian',image:'https://z-cdn-media.chatglm.cn/files/f65f40ee-b528-4cb6-8c7b-80cd15f54894.jpg?auth_key=1879098274-855e6204ab0249048065b264e41c2db5-0-e058392effcded7b6b966cea16b17047'},
@@ -396,8 +397,18 @@ function mergeSiteData(base, incoming) {
   }
 
   const result = {};
+  // Merge semua key dari base (default)
   for (const key of Object.keys(base)) {
     result[key] = mergeSiteData(base[key], incoming && typeof incoming === 'object' ? incoming[key] : undefined);
+  }
+  // Tambahkan key dari incoming yang TIDAK ADA di base
+  // (misal: layoutMode, fontSize, descFontSize, lineHeight, itemSpacing, blendMode, dll)
+  if (incoming && typeof incoming === 'object' && !Array.isArray(incoming)) {
+    for (const key of Object.keys(incoming)) {
+      if (!(key in result)) {
+        result[key] = incoming[key];
+      }
+    }
   }
   return result;
 }
@@ -431,8 +442,8 @@ try{
 
 // ==================== SUPABASE CONFIG ====================
 // Nilai diambil otomatis dari file .env oleh Vite saat dev/build
-const _SUPABASE_URL  = '%VITE_SUPABASE_URL%';
-const _SUPABASE_KEY  = '%VITE_SUPABASE_ANON_KEY%';
+const _SUPABASE_URL  = 'https://lmgzsfivhdoczbgoshyu.supabase.co';
+const _SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxtZ3pzZml2aGRvY3piZ29zaHl1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5NjU2NTQsImV4cCI6MjA5NDU0MTY1NH0.RxEztkIUOMtPDk90PrLbiKCitGA-5GlXAWWxiMxd36I';
 
 let _sb = null;
 let _sbSource = 'none';
@@ -776,11 +787,103 @@ function getMediaFolderFromPath(path) {
 
 function saveD(){
   localStorage.setItem('arazack_data',JSON.stringify(D));
+  updateDynamicBranding();
   if(!_sb){
     setCloudSyncState('local-only', 'Supabase belum aktif. Perubahan hanya tersimpan di browser/perangkat ini.');
     return;
   }
   syncToSupabase();
+}
+
+function updateDynamicBranding() {
+  const brandName = D.brand?.name || 'Ara&Zack';
+  const tagline = D.brand?.tagline || 'Bakehouse';
+  const logo = D.brand?.logo || '';
+
+  // Update navbar texts
+  const navNameEl = document.getElementById('nav-brand-name');
+  if (navNameEl) navNameEl.textContent = brandName;
+  const navTaglineEl = document.getElementById('nav-brand-tagline');
+  if (navTaglineEl) navTaglineEl.textContent = tagline;
+
+  // Update navbar logo
+  const navLogoEl = document.getElementById('nav-logo-container');
+  if (navLogoEl) {
+    if (logo) {
+      navLogoEl.innerHTML = `<img src="${esc(logo)}" class="w-full h-full object-cover">`;
+    } else {
+      navLogoEl.innerHTML = `<iconify-icon icon="mdi:cupcake" width="20" style="color:white"></iconify-icon>`;
+    }
+  }
+
+  // Update admin sidebar texts
+  const adminNameEl = document.getElementById('admin-brand-name');
+  if (adminNameEl) adminNameEl.textContent = brandName;
+
+  // Update admin sidebar logo
+  const adminLogoEl = document.getElementById('admin-logo-container');
+  if (adminLogoEl) {
+    if (logo) {
+      adminLogoEl.innerHTML = `<img src="${esc(logo)}" class="w-full h-full object-cover">`;
+    } else {
+      adminLogoEl.innerHTML = `<iconify-icon icon="mdi:cupcake" width="18" style="color:white"></iconify-icon>`;
+    }
+  }
+}
+
+async function handleBrandLogoUpload(input) {
+  const f = input && input.files ? input.files[0] : null;
+  if (!f) return;
+
+  const textInput = document.getElementById('f-slogo-url');
+  const previewImg = document.getElementById('brand-logo-preview');
+  const defaultIcon = document.getElementById('brand-logo-default-icon');
+  
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const base64Url = e.target.result;
+    
+    if (!_sb) {
+      if (textInput) textInput.value = base64Url;
+      if (previewImg) {
+        previewImg.src = base64Url;
+        previewImg.classList.remove('hidden');
+      }
+      if (defaultIcon) {
+        defaultIcon.classList.add('hidden');
+      }
+      D.brand.logo = base64Url;
+      saveD();
+      updateDynamicBranding();
+      buildStore();
+      toast('Logo berhasil dimuat secara lokal (Base64).');
+      return;
+    }
+
+    toast('Mengupload logo ke Supabase...');
+    if (textInput) textInput.value = '';
+    const url = await uploadToSupabase(f, 'brand');
+    if (!url) {
+      toast(`Upload gagal. ${_lastStorageError || 'Coba lagi.'}`);
+      return;
+    }
+
+    if (textInput) textInput.value = url;
+    if (previewImg) {
+      previewImg.src = url;
+      previewImg.classList.remove('hidden');
+    }
+    if (defaultIcon) {
+      defaultIcon.classList.add('hidden');
+    }
+    D.brand.logo = url;
+    saveD();
+    const syncOk = await syncToSupabase();
+    updateDynamicBranding();
+    buildStore();
+    toast(syncOk ? 'Logo berhasil diupload dan disinkronkan.' : 'Logo terupload, tetapi sinkronisasi data gagal.');
+  };
+  reader.readAsDataURL(f);
 }
 function toast(m){const t=document.getElementById('toast');document.getElementById('toast-msg').textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000)}
 
@@ -1264,6 +1367,7 @@ function printReceiptPaper() {
 // ==================== VIEW SWITCH ====================
 let currentView='store';
 function goAdmin(){
+  updateDynamicBranding();
   document.getElementById('V-STORE').classList.add('hidden');
   document.getElementById('V-ADMIN').classList.remove('hidden');
   document.body.style.background='#F5F0EB';
@@ -1301,6 +1405,7 @@ function toggleCart(){const s=document.getElementById('cart-side'),o=document.ge
 
 // ==================== BUILD STORE (FULL HTML INJECTION) ====================
 function buildStore(){
+  updateDynamicBranding();
   const h=D.hero,a=D.about,o=D.offer,c=D.contact;
   const activeProds=D.products.filter(p=>p.status==='active');
   const badgeCls={'Best Seller':'bg-bakery-500 text-white','New':'bg-emerald-500 text-white','Premium':'bg-choco-900 text-cream-100','Limited':'bg-red-500 text-white','Hot':'bg-orange-500 text-white','Sale':'bg-purple-500 text-white'};
@@ -1337,8 +1442,6 @@ function buildStore(){
   }, 0);
 
   let html='';
-
-  // HERO
   const layoutMode = D.hero.layoutMode || 'floating';
   const floatingCards = D.hero.floatingCards || [];
   let floatingCardsHtml = '';
@@ -1346,7 +1449,8 @@ function buildStore(){
   let vertItems = '';
 
   if (layoutMode === 'sliding') {
-    const repeated = [...floatingCards, ...floatingCards, ...floatingCards, ...floatingCards];
+    // Deep copy agar tidak memutasi data asli D.hero.floatingCards
+    const repeated = [...floatingCards, ...floatingCards, ...floatingCards, ...floatingCards].map(fc => ({...fc}));
     
     // Horizontal track items for mobile
     horizItems = repeated.map((fc, idx) => {
@@ -1458,8 +1562,8 @@ function buildStore(){
       </div>
     `;
   } else {
-    // Normal Floating Mode
-    floatingCardsHtml = floatingCards.map(fc => {
+    // Normal Floating Mode - deep copy agar tidak memutasi data asli D.hero.floatingCards
+    floatingCardsHtml = floatingCards.map(fc => ({...fc})).map(fc => {
       if (!fc.image && fc.productId) {
         const p = D.products.find(x => x.id === fc.productId);
         fc.image = p ? p.image : 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=400&q=80';
@@ -1874,7 +1978,9 @@ function buildStore(){
     <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-10 sm:gap-8 pb-12 border-b border-white/10">
       <div>
         <div class="flex items-center gap-2 mb-5">
-          <div class="w-9 h-9 rounded-full bg-bakery-500 flex items-center justify-center"><iconify-icon icon="mdi:cupcake" width="20" style="color:white"></iconify-icon></div>
+          <div class="w-9 h-9 rounded-full overflow-hidden bg-bakery-500 flex items-center justify-center">
+            ${D.brand?.logo ? `<img src="${esc(D.brand.logo)}" class="w-full h-full object-cover">` : `<iconify-icon icon="mdi:cupcake" width="20" style="color:white"></iconify-icon>`}
+          </div>
           <div class="leading-none">
             <span class="editable-text font-serif text-lg font-semibold" data-edit-path="brand.name">${D.brand.name}</span>
             <span class="editable-text block text-[9px] tracking-[0.25em] uppercase text-bakery-400 font-semibold mt-0.5" data-edit-path="brand.tagline">${D.brand.tagline}</span>
@@ -1910,6 +2016,7 @@ window.addEventListener('scroll',()=>{
 // ==================== ADMIN ====================
 const ASECTIONS=[
   {id:'dashboard',icon:'mdi:view-dashboard-outline',label:'Dashboard',group:'Utama'},
+  {id:'brand',icon:'mdi:storefront-outline',label:'Logo & Brand',group:'Utama'},
   {id:'products',icon:'mdi:cake-variant-outline',label:'Produk',group:'Utama'},
   {id:'categories',icon:'mdi:folder-outline',label:'Kategori',group:'Utama'},
   {id:'orders',icon:'mdi:cart-outline',label:'Pesanan',group:'Transaksi'},
@@ -1934,7 +2041,7 @@ function buildAdminNav(){
 function showASection(id){
   curA=id;
   buildAdminNav();
-  const t={dashboard:['Dashboard','Selamat datang'],products:['Produk','Kelola menu'],categories:['Kategori','Kelola kategori'],orders:['Pesanan','Kelola pesanan pelanggan'],hero:['Hero Banner','Edit tampilan utama'],about:['Tentang Kami','Edit informasi'],testimonials:['Testimoni','Kelola testimoni'],offer:['Penawaran','Edit banner'],contact:['Kontak','Edit kontak'],settings:['Pengaturan','Konfigurasi umum']};
+  const t={dashboard:['Dashboard','Selamat datang'],brand:['Logo & Brand','Kelola logo dan identitas toko'],products:['Produk','Kelola menu'],categories:['Kategori','Kelola kategori'],orders:['Pesanan','Kelola pesanan pelanggan'],hero:['Hero Banner','Edit tampilan utama'],about:['Tentang Kami','Edit informasi'],testimonials:['Testimoni','Kelola testimoni'],offer:['Penawaran','Edit banner'],contact:['Kontak','Edit kontak'],settings:['Pengaturan','Konfigurasi umum']};
   document.getElementById('a-title').textContent=t[id]?.[0]||id;
   document.getElementById('a-sub').textContent=t[id]?.[1]||'';
   if(window.innerWidth<1024){document.getElementById('a-side').classList.remove('open');document.getElementById('a-overlay').classList.add('hidden')}
@@ -1944,6 +2051,7 @@ function showASection(id){
 function renderASection(id){
   const c=document.getElementById('a-content');
   if(id==='dashboard')c.innerHTML=renderDash();
+  else if(id==='brand')c.innerHTML=renderABrand();
   else if(id==='products')c.innerHTML=renderAProds();
   else if(id==='categories')c.innerHTML=renderACats();
   else if(id==='orders')c.innerHTML=renderAOrders();
@@ -1984,6 +2092,7 @@ function renderDash(){
     <div class="bg-white rounded-2xl p-6 border border-bakery-100"><h3 class="font-semibold text-choco-900 mb-4">Aksi Cepat</h3><div class="space-y-2.5">
       <button onclick="enterLiveEdit()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-bakery-50 hover:bg-bakery-100 text-sm text-left font-semibold text-bakery-600 border border-bakery-200"><iconify-icon icon="mdi:palette-outline" width="20" style="color:#B8860B"></iconify-icon>Visual Live Editor</button>
       <button onclick="showASection('orders')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-bakery-50 hover:bg-bakery-100 text-choco-700 text-sm text-left font-semibold border border-bakery-200/50"><iconify-icon icon="mdi:cart-outline" width="20" style="color:#B8860B"></iconify-icon>Kelola Pesanan (${pendingOrders} Baru)</button>
+      <button onclick="showASection('brand')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-bakery-50 hover:bg-bakery-100 text-choco-700 text-sm text-left"><iconify-icon icon="mdi:storefront-outline" width="20" style="color:#B8860B"></iconify-icon>Pengaturan Logo & Brand</button>
       <button onclick="showASection('products');openProdModal()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-bakery-50 hover:bg-bakery-100 text-choco-700 text-sm text-left"><iconify-icon icon="mdi:plus-circle-outline" width="20" style="color:#B8860B"></iconify-icon>Tambah Produk</button>
       <button onclick="showASection('hero')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-bakery-50 hover:bg-bakery-100 text-choco-700 text-sm text-left"><iconify-icon icon="mdi:image-edit-outline" width="20" style="color:#B8860B"></iconify-icon>Edit Hero Banner</button>
       <button onclick="goStore()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-bakery-50 hover:bg-bakery-100 text-choco-700 text-sm text-left"><iconify-icon icon="mdi:eye-outline" width="20" style="color:#B8860B"></iconify-icon>Lihat Web Store</button>
@@ -2218,8 +2327,60 @@ function renderHeroFloatingCardsAdmin(cards){
   }).join('');
 }
 
-function renderAHero(){const h=D.hero;return `<div class="max-w-3xl"><div class="bg-white rounded-2xl p-6 sm:p-8 border border-bakery-100 space-y-5">
-  <div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Baris 1</label><input id="f-h1" type="text" value="${esc(h.line1)}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp"></div>
+function renderAHero(){
+  const h=D.hero;
+  return `<div class="max-w-3xl space-y-6">
+  <!-- Seksi Identitas & Logo Brand -->
+  <div class="bg-white rounded-2xl p-6 sm:p-8 border border-bakery-100 space-y-5">
+    <div class="flex items-center justify-between border-b border-bakery-100 pb-3">
+      <h3 class="font-semibold text-choco-900 flex items-center gap-2">
+        <iconify-icon icon="mdi:storefront-outline" width="20" style="color:#B8860B"></iconify-icon>
+        Identitas & Logo Brand
+      </h3>
+      <span class="text-[10px] bg-bakery-100 text-bakery-700 font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">Navigasi Utama</span>
+    </div>
+    
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Nama Brand</label>
+        <input id="f-sbr" type="text" value="${esc(D.brand.name)}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp">
+      </div>
+      <div>
+        <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Tagline</label>
+        <input id="f-stg" type="text" value="${esc(D.brand.tagline)}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp">
+      </div>
+    </div>
+    
+    <div>
+      <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Logo Brand</label>
+      <div class="flex flex-col sm:flex-row gap-4 items-center bg-cream-50/50 p-4 rounded-xl border border-bakery-100">
+        <div class="w-16 h-16 rounded-full overflow-hidden bg-bakery-100 flex items-center justify-center flex-shrink-0 border border-bakery-200 shadow-inner">
+          <img id="brand-logo-preview" src="${D.brand.logo ? esc(D.brand.logo) : ''}" class="w-full h-full object-cover ${D.brand.logo ? '' : 'hidden'}" alt="Preview Logo">
+          <iconify-icon id="brand-logo-default-icon" icon="mdi:cupcake" width="32" class="text-bakery-400 ${D.brand.logo ? 'hidden' : ''}"></iconify-icon>
+        </div>
+        <div class="flex-1 w-full space-y-3">
+          <div class="flex gap-2">
+            <input id="f-slogo-url" type="text" value="${esc(D.brand.logo || '')}" class="flex-1 w-full px-4 py-2.5 rounded-xl border border-bakery-200 bg-white text-choco-900 text-xs inp" placeholder="URL Logo (otomatis terisi setelah upload)">
+            <label class="flex-shrink-0 cursor-pointer inline-flex items-center gap-1.5 px-4 py-2.5 bg-bakery-100 text-choco-700 hover:bg-bakery-200 text-xs font-bold tracking-wider uppercase rounded-xl transition-colors">
+              <iconify-icon icon="mdi:cloud-upload-outline" width="14"></iconify-icon>Upload
+              <input type="file" accept="image/*" onchange="handleBrandLogoUpload(this)" class="hidden">
+            </label>
+          </div>
+          <p class="text-[10px] text-choco-400">Rasio 1:1 direkomendasikan. File akan disimpan secara lokal atau diunggah ke cloud jika koneksi Supabase aktif.</p>
+        </div>
+      </div>
+    </div>
+
+    <button onclick="D.brand.name=document.getElementById('f-sbr').value;D.brand.tagline=document.getElementById('f-stg').value;D.brand.logo=document.getElementById('f-slogo-url').value;saveD();buildStore();toast('Pengaturan brand disimpan')" class="w-full py-3.5 bg-choco-900 text-cream-100 text-[11px] font-bold tracking-[0.15em] uppercase rounded-xl hover:bg-choco-800 flex items-center justify-center gap-2"><iconify-icon icon="mdi:content-save-outline" width="16"></iconify-icon>Simpan Brand</button>
+  </div>
+
+  <!-- Seksi Konten Hero Banner -->
+  <div class="bg-white rounded-2xl p-6 sm:p-8 border border-bakery-100 space-y-5">
+    <h3 class="font-semibold text-choco-900 flex items-center gap-2 border-b border-bakery-100 pb-3">
+      <iconify-icon icon="mdi:image-outline" width="20" style="color:#B8860B"></iconify-icon>
+      Konten Hero Banner
+    </h3>
+    <div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Baris 1</label><input id="f-h1" type="text" value="${esc(h.line1)}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp"></div>
   <div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Baris 2 (Highlight)</label><input id="f-h2" type="text" value="${esc(h.line2)}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp"></div>
   <div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Baris 3</label><input id="f-h3" type="text" value="${esc(h.line3)}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp"></div>
   <div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Deskripsi</label><textarea id="f-hdesc" rows="3" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp resize-none">${esc(h.desc)}</textarea></div>
@@ -2387,6 +2548,52 @@ function renderAContact(){const c=D.contact;return `<div class="max-w-3xl"><div 
   <button onclick="saveContact()" class="w-full py-3.5 bg-choco-900 text-cream-100 text-[11px] font-bold tracking-[0.15em] uppercase rounded-xl hover:bg-choco-800 flex items-center justify-center gap-2"><iconify-icon icon="mdi:content-save-outline" width="16"></iconify-icon>Simpan</button>
 </div></div>`}
 
+function renderABrand(){
+  return `<div class="max-w-3xl space-y-6">
+  <div class="bg-white rounded-2xl p-6 sm:p-8 border border-bakery-100 space-y-5">
+    <div class="flex items-center justify-between border-b border-bakery-100 pb-3">
+      <h3 class="font-semibold text-choco-900 flex items-center gap-2">
+        <iconify-icon icon="mdi:storefront-outline" width="20" style="color:#B8860B"></iconify-icon>
+        Identitas & Logo Brand
+      </h3>
+      <span class="text-[10px] bg-bakery-100 text-bakery-700 font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">Navigasi Utama</span>
+    </div>
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Nama Brand</label>
+        <input id="f-sbr" type="text" value="${esc(D.brand.name)}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp">
+      </div>
+      <div>
+        <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Tagline</label>
+        <input id="f-stg" type="text" value="${esc(D.brand.tagline)}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp">
+      </div>
+    </div>
+    
+    <div>
+      <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Logo Brand</label>
+      <div class="flex flex-col sm:flex-row gap-4 items-center bg-cream-50/50 p-4 rounded-xl border border-bakery-100">
+        <div class="w-16 h-16 rounded-full overflow-hidden bg-bakery-100 flex items-center justify-center flex-shrink-0 border border-bakery-200 shadow-inner">
+          <img id="brand-logo-preview" src="${D.brand.logo ? esc(D.brand.logo) : ''}" class="w-full h-full object-cover ${D.brand.logo ? '' : 'hidden'}" alt="Preview Logo">
+          <iconify-icon id="brand-logo-default-icon" icon="mdi:cupcake" width="32" class="text-bakery-400 ${D.brand.logo ? 'hidden' : ''}"></iconify-icon>
+        </div>
+        <div class="flex-1 w-full space-y-3">
+          <div class="flex gap-2">
+            <input id="f-slogo-url" type="text" value="${esc(D.brand.logo || '')}" class="flex-1 w-full px-4 py-2.5 rounded-xl border border-bakery-200 bg-white text-choco-900 text-xs inp" placeholder="URL Logo (otomatis terisi setelah upload)">
+            <label class="flex-shrink-0 cursor-pointer inline-flex items-center gap-1.5 px-4 py-2.5 bg-bakery-100 text-choco-700 hover:bg-bakery-200 text-xs font-bold tracking-wider uppercase rounded-xl transition-colors">
+              <iconify-icon icon="mdi:cloud-upload-outline" width="14"></iconify-icon>Upload
+              <input type="file" accept="image/*" onchange="handleBrandLogoUpload(this)" class="hidden">
+            </label>
+          </div>
+          <p class="text-[10px] text-choco-400">Rasio 1:1 direkomendasikan. File akan disimpan secara lokal atau diunggah ke cloud jika koneksi Supabase aktif.</p>
+        </div>
+      </div>
+    </div>
+
+    <button onclick="D.brand.name=document.getElementById('f-sbr').value;D.brand.tagline=document.getElementById('f-stg').value;D.brand.logo=document.getElementById('f-slogo-url').value;saveD();buildStore();toast('Pengaturan brand disimpan')" class="w-full py-3.5 bg-choco-900 text-cream-100 text-[11px] font-bold tracking-[0.15em] uppercase rounded-xl hover:bg-choco-800 flex items-center justify-center gap-2"><iconify-icon icon="mdi:content-save-outline" width="16"></iconify-icon>Simpan Brand</button>
+  </div>
+  </div>`;
+}
+
 function renderASettings(){
   if (!D.settings) D.settings = {};
   const qrisUrl = D.settings.qrisImage || '';
@@ -2403,8 +2610,38 @@ function renderASettings(){
   return `<div class="max-w-3xl space-y-6">
   <div class="bg-white rounded-2xl p-6 sm:p-8 border border-bakery-100 space-y-5">
     <h3 class="font-semibold text-choco-900">Brand</h3>
-    <div class="grid grid-cols-2 gap-4"><div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Nama Brand</label><input id="f-sbr" type="text" value="${esc(D.brand.name)}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp"></div><div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Tagline</label><input id="f-stg" type="text" value="${esc(D.brand.tagline)}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp"></div></div>
-    <button onclick="D.brand.name=document.getElementById('f-sbr').value;D.brand.tagline=document.getElementById('f-stg').value;saveD();toast('Pengaturan disimpan')" class="w-full py-3.5 bg-choco-900 text-cream-100 text-[11px] font-bold tracking-[0.15em] uppercase rounded-xl hover:bg-choco-800 flex items-center justify-center gap-2"><iconify-icon icon="mdi:content-save-outline" width="16"></iconify-icon>Simpan</button>
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Nama Brand</label>
+        <input id="f-sbr" type="text" value="${esc(D.brand.name)}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp">
+      </div>
+      <div>
+        <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Tagline</label>
+        <input id="f-stg" type="text" value="${esc(D.brand.tagline)}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp">
+      </div>
+    </div>
+    
+    <div>
+      <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Logo Brand</label>
+      <div class="flex flex-col sm:flex-row gap-4 items-center bg-cream-50/50 p-4 rounded-xl border border-bakery-100">
+        <div class="w-16 h-16 rounded-full overflow-hidden bg-bakery-100 flex items-center justify-center flex-shrink-0 border border-bakery-200 shadow-inner">
+          <img id="brand-logo-preview" src="${D.brand.logo ? esc(D.brand.logo) : ''}" class="w-full h-full object-cover ${D.brand.logo ? '' : 'hidden'}" alt="Preview Logo">
+          <iconify-icon id="brand-logo-default-icon" icon="mdi:cupcake" width="32" class="text-bakery-400 ${D.brand.logo ? 'hidden' : ''}"></iconify-icon>
+        </div>
+        <div class="flex-1 w-full space-y-3">
+          <div class="flex gap-2">
+            <input id="f-slogo-url" type="text" value="${esc(D.brand.logo || '')}" class="flex-1 w-full px-4 py-2.5 rounded-xl border border-bakery-200 bg-white text-choco-900 text-xs inp" placeholder="URL Logo (otomatis terisi setelah upload)">
+            <label class="flex-shrink-0 cursor-pointer inline-flex items-center gap-1.5 px-4 py-2.5 bg-bakery-100 text-choco-700 hover:bg-bakery-200 text-xs font-bold tracking-wider uppercase rounded-xl transition-colors">
+              <iconify-icon icon="mdi:cloud-upload-outline" width="14"></iconify-icon>Upload
+              <input type="file" accept="image/*" onchange="handleBrandLogoUpload(this)" class="hidden">
+            </label>
+          </div>
+          <p class="text-[10px] text-choco-400">Rasio 1:1 direkomendasikan. File akan disimpan secara lokal atau diunggah ke cloud jika koneksi Supabase aktif.</p>
+        </div>
+      </div>
+    </div>
+
+    <button onclick="D.brand.name=document.getElementById('f-sbr').value;D.brand.tagline=document.getElementById('f-stg').value;D.brand.logo=document.getElementById('f-slogo-url').value;saveD();buildStore();toast('Pengaturan brand disimpan')" class="w-full py-3.5 bg-choco-900 text-cream-100 text-[11px] font-bold tracking-[0.15em] uppercase rounded-xl hover:bg-choco-800 flex items-center justify-center gap-2"><iconify-icon icon="mdi:content-save-outline" width="16"></iconify-icon>Simpan Brand</button>
   </div>
   
   <div class="bg-white rounded-2xl p-6 sm:p-8 border border-bakery-100 space-y-5">
@@ -2953,7 +3190,7 @@ function exitLiveEdit() {
   // Reload current data
   try {
     const s = localStorage.getItem('arazack_data');
-    D = s ? JSON.parse(s) : JSON.parse(JSON.stringify(DEF));
+    D = s ? normalizeSiteData(JSON.parse(s)) : cloneDefaultData();
   } catch(e) {}
   
   // Go back to Admin view
@@ -3596,6 +3833,8 @@ async function bootstrapApp() {
       console.warn('Bootstrap Supabase load failed:', e);
     }
   }
+
+  updateDynamicBranding();
 
   if(location.hash==='#admin'){goAdmin()}else{buildStore()}
 }
