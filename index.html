@@ -685,9 +685,20 @@ async function loadFromSupabase() {
         setCloudSyncState('failed', 'Data cloud di Supabase tidak lengkap/rusak, jadi aplikasi tetap memakai data lokal/default. Silakan sync ulang dari browser PC yang punya data terbaru.');
         return false;
       }
+      const localCust = D.customers || [];
+      const localOrd = D.orders || [];
       D = normalizeSiteData(data.value);
+      
+      if (!D.customers || D.customers.length === 0) D.customers = localCust;
+      if (!D.orders || D.orders.length === 0) D.orders = localOrd;
+
       localStorage.setItem('arazack_data', JSON.stringify(D));
       setCloudSyncState('loaded', 'Data cloud berhasil dimuat dari Supabase.');
+      
+      // If we merged local customers/orders that weren't in cloud, sync them back
+      if (localCust.length > 0 || localOrd.length > 0) {
+        syncToSupabase();
+      }
       return true;
     }
     setCloudSyncState('connected', 'Supabase aktif, tetapi belum ada data cloud yang dimuat.');
