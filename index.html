@@ -108,6 +108,26 @@
       0% { transform: translateY(0); }
       100% { transform: translateY(-50%); }
     }
+    @keyframes marquee-horiz-anim {
+      0% { transform: translateX(0%); }
+      100% { transform: translateX(-50%); }
+    }
+    .marquee-horiz-container {
+      display: flex;
+      overflow: hidden;
+      width: 100%;
+      mask-image: linear-gradient(to right, transparent, white 5%, white 95%, transparent);
+      -webkit-mask-image: linear-gradient(to right, transparent, white 5%, white 95%, transparent);
+    }
+    .marquee-horiz-track {
+      display: flex;
+      gap: 1.5rem;
+      width: max-content;
+      animation: marquee-horiz-anim 40s linear infinite;
+    }
+    .marquee-horiz-track:hover {
+      animation-play-state: paused;
+    }
     .marquee-vert-container {
       display: flex;
       flex-direction: column;
@@ -125,6 +145,13 @@
     }
     .marquee-vert-track:hover {
       animation-play-state: paused;
+    }
+    .hide-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .hide-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
     }
     #s-nav {
       transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -377,6 +404,8 @@
 // ==================== DEFAULT DATA ====================
 const DEF={
   brand:{name:'Ara&Zack',tagline:'Bakehouse',logo:''},
+  customers:[],
+  orders:[],
   hero:{line1:'The Art of',line2:'Premium',line3:'Delight',desc:'Setiap gigitan adalah karya seni. Kami menghadirkan kelezatan premium dengan bahan pilihan terbaik, dibuat dengan cinta dan keahlian artisan.',badge:'Premium Artisan Bakery',image:'https://z-cdn-media.chatglm.cn/files/8edb6fa1-07ba-4160-af89-e994966e0a4f.jpg?auth_key=1879098274-c8c58ef20ba74cd6b7114ac1d98910ab-0-6f2640723b8007c8141cbf68b48a4fc9',btn1:'Lihat Menu',btn2:'Tentang Kami',stat1:{val:'12+',label:'Tahun'},stat2:{val:'50+',label:'Menu'},stat3:{val:'10K+',label:'Pelanggan'},layoutMode:'floating',fontSize:96,descFontSize:18,lineHeight:0.95,itemSpacing:24,floatingCards:[{id:1,image:'https://z-cdn-media.chatglm.cn/files/b4b7cac5-ea7e-417f-912c-fe304e31743b.jpg?auth_key=1879098274-279a39f1f73946e2a30c970adfe92bcf-0-82d70063c76b5c9e9cf79a10be05b497',top:20,left:70,size:'md',bgType:'glass',blendMode:'normal',rotate:-5},{id:2,image:'https://z-cdn-media.chatglm.cn/files/f65f40ee-b528-4cb6-8c7b-80cd15f54894.jpg?auth_key=1879098274-855e6204ab0249048065b264e41c2db5-0-e058392effcded7b6b966cea16b17047',top:50,left:64,size:'sm',bgType:'choco',blendMode:'normal',rotate:4}]},
 
   categories:[
@@ -461,6 +490,22 @@ try{
 }catch(e){
   D=cloneDefaultData();
 }
+
+// MIGRATION: move customers and orders from localStorage to D if they exist there
+if (!D.customers || D.customers.length === 0) {
+  try {
+    const s = localStorage.getItem('arazack_customers');
+    if (s) D.customers = JSON.parse(s);
+  } catch(err) {}
+}
+if (!D.orders || D.orders.length === 0) {
+  try {
+    const s = localStorage.getItem('arazack_orders');
+    if (s) D.orders = JSON.parse(s);
+  } catch(err) {}
+}
+if (!D.customers) D.customers = [];
+if (!D.orders) D.orders = [];
 
 // ==================== SUPABASE CONFIG ====================
 // Nilai diambil otomatis dari file .env oleh Vite saat dev/build
@@ -1044,14 +1089,14 @@ function openCustomerAuthModal(mode='login') {
         <h3 class="font-serif text-xl text-choco-900 flex items-center gap-2"><iconify-icon icon="mdi:lock-outline" width="22" style="color:#B8860B"></iconify-icon>Masuk Akun Pelanggan</h3>
         <button onclick="closeModal()" class="w-9 h-9 rounded-full flex items-center justify-center hover:bg-bakery-50"><iconify-icon icon="mdi:close" width="20" style="color:#5C3D22"></iconify-icon></button>
       </div>
-      <form onsubmit="handleCustomerLogin(event)" class="p-6 space-y-5">
+      <form onsubmit="handleCustomerLogin(event)" class="p-6 space-y-5" autocomplete="off">
         <div>
           <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Email *</label>
-          <input id="auth-email" type="email" required class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp text-sm" placeholder="Masukkan email Anda">
+          <input id="auth-email" type="email" required autocomplete="off" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp text-sm" placeholder="Masukkan email Anda">
         </div>
         <div>
           <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Password *</label>
-          <input id="auth-password" type="password" required class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp text-sm" placeholder="Masukkan password Anda">
+          <input id="auth-password" type="password" required autocomplete="new-password" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp text-sm" placeholder="Masukkan password Anda">
         </div>
         <button type="submit" class="w-full py-4 bg-choco-900 text-cream-100 text-[11px] font-bold tracking-[0.15em] uppercase rounded-xl hover:bg-choco-800 transition-colors flex items-center justify-center gap-2"><iconify-icon icon="mdi:login" width="16"></iconify-icon>Masuk Sekarang</button>
         <div class="text-center pt-2">
@@ -1076,7 +1121,10 @@ function openCustomerAuthModal(mode='login') {
         </div>
         <div>
           <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-1.5">No. Telepon / WhatsApp *</label>
-          <input id="auth-phone" type="tel" required class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp text-sm" placeholder="Contoh: 081234567890">
+          <div class="flex">
+            <span class="inline-flex items-center justify-center px-4 rounded-l-xl border border-r-0 border-bakery-200 bg-bakery-100 text-choco-700 text-sm font-semibold">+62</span>
+            <input id="auth-phone" type="tel" required class="w-full px-4 py-3 rounded-r-xl border border-bakery-200 bg-cream-50 text-choco-900 inp text-sm focus:outline-none focus:border-bakery-300" placeholder="">
+          </div>
         </div>
         <div>
           <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-1.5">Password *</label>
@@ -1098,13 +1146,8 @@ function handleCustomerLogin(e) {
   const email = document.getElementById('auth-email').value.trim();
   const password = document.getElementById('auth-password').value;
   
-  let customers = [];
-  try {
-    const s = localStorage.getItem('arazack_customers');
-    if (s) customers = JSON.parse(s);
-  } catch(err) {}
-  
-  const cust = customers.find(x => x.email.toLowerCase() === email.toLowerCase());
+  if (!D.customers) D.customers = [];
+  const cust = D.customers.find(x => x.email.toLowerCase() === email.toLowerCase());
   if (!cust) {
     toast('Email belum terdaftar. Silakan daftar akun baru.');
     return;
@@ -1130,7 +1173,11 @@ function handleCustomerRegister(e) {
   e.preventDefault();
   const name = document.getElementById('auth-name').value.trim();
   const email = document.getElementById('auth-email').value.trim();
-  const phone = document.getElementById('auth-phone').value.trim();
+  let phone = document.getElementById('auth-phone').value.trim();
+  if (phone.startsWith('0')) phone = phone.substring(1);
+  if (phone.startsWith('+62')) phone = phone.substring(3);
+  if (phone.startsWith('62')) phone = phone.substring(2);
+  phone = '+62' + phone;
   const password = document.getElementById('auth-password').value;
   
   if (password.length < 6) {
@@ -1138,20 +1185,15 @@ function handleCustomerRegister(e) {
     return;
   }
   
-  let customers = [];
-  try {
-    const s = localStorage.getItem('arazack_customers');
-    if (s) customers = JSON.parse(s);
-  } catch(err) {}
-  
-  if (customers.some(x => x.email.toLowerCase() === email.toLowerCase())) {
+  if (!D.customers) D.customers = [];
+  if (D.customers.some(x => x.email.toLowerCase() === email.toLowerCase())) {
     toast('Email sudah terdaftar. Silakan masuk.');
     return;
   }
   
   const newCust = { name, email, phone, password };
-  customers.push(newCust);
-  localStorage.setItem('arazack_customers', JSON.stringify(customers));
+  D.customers.push(newCust);
+  saveD();
   
   currentCustomer = { name, email, phone };
   localStorage.setItem('arazack_current_customer', JSON.stringify(currentCustomer));
@@ -1167,13 +1209,7 @@ function handleCustomerRegister(e) {
 function openCustomerOrdersModal() {
   if (!currentCustomer) return;
   
-  let orders = [];
-  try {
-    const s = localStorage.getItem('arazack_orders');
-    if (s) orders = JSON.parse(s);
-  } catch(err) {}
-  
-  const myOrders = orders.filter(o => o.customer.email === currentCustomer.email);
+  const myOrders = (D.orders || []).filter(o => o.customer.email === currentCustomer.email);
   
   const box = document.getElementById('modal-box');
   if (!box) return;
@@ -1195,6 +1231,7 @@ function openCustomerOrdersModal() {
       else if (o.status === 'Dikirim') statusColor = 'bg-indigo-100 text-indigo-700';
       else if (o.status === 'Selesai') statusColor = 'bg-green-100 text-green-700';
       else if (o.status === 'Dibatalkan') statusColor = 'bg-red-100 text-red-700';
+      else if (o.status === 'Menunggu Batal') statusColor = 'bg-orange-100 text-orange-700';
       
       html += `
         <div class="border border-bakery-200 rounded-xl p-4">
@@ -1210,9 +1247,12 @@ function openCustomerOrdersModal() {
           </div>
           <div class="flex items-center justify-between pt-3 border-t border-bakery-100">
             <p class="text-xs font-bold text-choco-900">Rp ${o.total.toLocaleString('id-ID')}</p>
-            ${(o.status !== 'Selesai' && o.status !== 'Dibatalkan') ? `
-              <button onclick="receiveOrder('${o.id}')" class="px-3 py-1.5 bg-bakery-500 text-white text-[10px] font-bold tracking-wider uppercase rounded-lg hover:bg-bakery-600 transition-colors flex items-center gap-1"><iconify-icon icon="mdi:check-circle-outline"></iconify-icon>Barang Diterima</button>
+            <div class="flex gap-2">
+            ${(o.status !== 'Selesai' && o.status !== 'Dibatalkan' && o.status !== 'Menunggu Batal') ? `
+              <button onclick="requestCancelOrder('${o.id}')" class="px-3 py-1.5 bg-red-50 text-red-600 border border-red-200 text-[10px] font-bold tracking-wider uppercase rounded-lg hover:bg-red-100 transition-colors flex items-center gap-1"><iconify-icon icon="mdi:cancel"></iconify-icon>Batal</button>
+              <button onclick="receiveOrder('${o.id}')" class="px-3 py-1.5 bg-bakery-500 text-white text-[10px] font-bold tracking-wider uppercase rounded-lg hover:bg-bakery-600 transition-colors flex items-center gap-1"><iconify-icon icon="mdi:check-circle-outline"></iconify-icon>Diterima</button>
             ` : ''}
+            </div>
           </div>
         </div>
       `;
@@ -1224,6 +1264,48 @@ function openCustomerOrdersModal() {
   
   document.getElementById('modal-bg').classList.remove('hidden');
   document.body.style.overflow = 'hidden';
+}
+
+function requestCancelOrder(orderId) {
+  const box = document.getElementById('modal-box');
+  if (!box) return;
+  
+  box.innerHTML = `
+    <div class="flex items-center justify-between p-6 border-b border-bakery-100">
+      <h3 class="font-serif text-xl text-choco-900 flex items-center gap-2"><iconify-icon icon="mdi:cancel" width="22" style="color:#B8860B"></iconify-icon>Pembatalan Pesanan</h3>
+      <button onclick="openCustomerOrdersModal()" class="w-9 h-9 rounded-full flex items-center justify-center hover:bg-bakery-50"><iconify-icon icon="mdi:arrow-left" width="20" style="color:#5C3D22"></iconify-icon></button>
+    </div>
+    <form onsubmit="submitCancelRequest(event, '${orderId}')" class="p-6 space-y-4">
+      <p class="text-sm text-choco-600 mb-4">Silakan masukkan alasan pembatalan pesanan <strong>${orderId}</strong>. Pembatalan ini membutuhkan persetujuan admin.</p>
+      <div>
+        <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-1.5">Alasan Batal *</label>
+        <textarea id="cancel-reason" required rows="3" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp text-sm resize-none" placeholder="Contoh: Salah pilih ukuran kue..."></textarea>
+      </div>
+      <button type="submit" class="w-full py-4 bg-red-600 text-white text-[11px] font-bold tracking-[0.15em] uppercase rounded-xl hover:bg-red-700 transition-colors flex items-center justify-center gap-2">Ajukan Pembatalan</button>
+    </form>
+  `;
+}
+
+function submitCancelRequest(e, orderId) {
+  e.preventDefault();
+  const reason = document.getElementById('cancel-reason').value.trim();
+  if (!reason) return;
+  
+  let orders = [];
+  try {
+    const s = localStorage.getItem('arazack_orders');
+    if (s) orders = JSON.parse(s);
+  } catch(err) {}
+  
+  const idx = orders.findIndex(x => x.id === orderId);
+  if (idx !== -1) {
+    orders[idx].previousStatus = orders[idx].status;
+    orders[idx].status = 'Menunggu Batal';
+    orders[idx].cancelReason = reason;
+    localStorage.setItem('arazack_orders', JSON.stringify(orders));
+    toast('Pengajuan pembatalan terkirim.');
+    openCustomerOrdersModal();
+  }
 }
 
 function receiveOrder(orderId) {
@@ -1430,13 +1512,6 @@ function submitOrder() {
   const orderDate = new Date().toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
   const selectedMethod = document.querySelector('input[name="payment_method"]:checked')?.value || 'COD';
   
-  // Save order to localStorage backup
-  let orders = [];
-  try {
-    const s = localStorage.getItem('arazack_orders');
-    if (s) orders = JSON.parse(s);
-  } catch(err) {}
-  
   const newOrder = {
     id: orderId,
     date: orderDate,
@@ -1446,8 +1521,10 @@ function submitOrder() {
     paymentMethod: selectedMethod,
     status: 'Pending'
   };
-  orders.unshift(newOrder); // Newest first
-  localStorage.setItem('arazack_orders', JSON.stringify(orders));
+
+  if (!D.orders) D.orders = [];
+  D.orders.unshift(newOrder); // Newest first
+  saveD();
 
   const msg = `Halo Ara & Zack Bakehouse, saya ingin melakukan pemesanan:
 
@@ -1543,7 +1620,7 @@ function showReceiptModal(order) {
       </div>
       
       <div class="flex flex-col gap-2.5 max-w-sm mx-auto pt-2">
-        <button onclick="shareReceiptToCustomer('${order.customer.phone}', '${order.id}', '${order.customer.name}', ${order.total}, '${order.paymentMethod}')" class="w-full py-4 bg-green-500 hover:bg-green-600 text-white text-[11px] font-bold tracking-[0.15em] uppercase rounded-xl shadow-lg transition-all hover:scale-[1.02] flex items-center justify-center gap-2">
+        <button onclick="shareReceiptToCustomer('${order.id}')" class="w-full py-4 bg-green-500 hover:bg-green-600 text-white text-[11px] font-bold tracking-[0.15em] uppercase rounded-xl shadow-lg transition-all hover:scale-[1.02] flex items-center justify-center gap-2">
           <iconify-icon icon="mdi:whatsapp" width="18"></iconify-icon>Kirim Struk ke WhatsApp Pelanggan
         </button>
         <div class="grid grid-cols-2 gap-2.5">
@@ -1561,11 +1638,40 @@ function showReceiptModal(order) {
   document.body.style.overflow = 'hidden';
 }
 
-function shareReceiptToCustomer(phone, orderId, name, total, method) {
-  const cleanPhone = phone.replace(/[^0-9]/g, '');
+function shareReceiptToCustomer(orderId) {
+  const o = D.orders.find(x => x.id === orderId);
+  if (!o) return;
+
+  const cleanPhone = o.customer.phone.replace(/[^0-9]/g, '');
   const targetPhone = cleanPhone.startsWith('0') ? '62' + cleanPhone.substring(1) : cleanPhone;
   
-  const msg = `Halo Kak *${name}*, berikut adalah Struk Belanja Anda dari *Ara & Zack Bakehouse*:\n\n============================\n*ID PESANAN:* ${orderId}\n*METODE:* ${method}\n*TOTAL TAGIHAN:* Rp ${total.toLocaleString('id-ID')}\n============================\n\nTerima kasih banyak atas pesanannya! Dapur kami sedang memproses pesanan kue lezat Anda. ❤️`;
+  const itemsStr = o.items.map(i => `- ${i.name} (${i.qty}x) = Rp ${(i.price * i.qty).toLocaleString('id-ID')}`).join('\n');
+  
+  const defaultReceipt = `Halo Kak *{{name}}*, berikut adalah Struk Belanja Anda dari *Ara & Zack Bakehouse*:
+
+============================
+*ID PESANAN:* {{orderId}}
+*TANGGAL:* {{date}}
+*METODE:* {{method}}
+============================
+
+*DAFTAR PESANAN:*
+{{items}}
+
+*TOTAL TAGIHAN:* Rp {{total}}
+============================
+
+Terima kasih banyak atas pesanannya! Dapur kami sedang memproses pesanan kue lezat Anda. ❤️`;
+
+  const tpl = (window.D && window.D.settings && window.D.settings.receiptTemplate) ? window.D.settings.receiptTemplate : defaultReceipt;
+
+  let msg = tpl;
+  msg = msg.replace(/\{\{name\}\}/g, o.customer.name);
+  msg = msg.replace(/\{\{orderId\}\}/g, o.id);
+  msg = msg.replace(/\{\{date\}\}/g, o.date);
+  msg = msg.replace(/\{\{method\}\}/g, o.paymentMethod);
+  msg = msg.replace(/\{\{items\}\}/g, itemsStr);
+  msg = msg.replace(/\{\{total\}\}/g, o.total.toLocaleString('id-ID'));
   
   const url = `https://api.whatsapp.com/send?phone=${targetPhone}&text=${encodeURIComponent(msg)}`;
   window.open(url, '_blank');
@@ -1589,7 +1695,7 @@ function printReceiptPaper() {
       </head>
       <body onload="window.print();window.close();">
         <div style="border: 1px solid #ddd; padding: 20px; border-radius: 12px; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
-          \${printContents}
+          ${printContents}
         </div>
       </body>
     </html>
@@ -2209,22 +2315,30 @@ function buildStore(){
   }
 
   // TESTIMONIALS
-  html+=`<section id="s-testimonials" class="py-20 sm:py-28 bg-cream-50"><div class="w-full 2xl:px-12 mx-auto px-5 sm:px-8">
-    <div class="text-center mb-16 reveal"><span class="inline-block text-[10px] font-bold tracking-[0.25em] uppercase text-bakery-500 mb-4">Testimoni</span><h2 class="font-serif text-3xl sm:text-5xl font-light text-choco-900 tracking-tight">Kata Mereka</h2></div>
-    <div class="grid md:grid-cols-3 gap-6 sm:gap-8">${D.testimonials.map(t=>`<div class="reveal bg-white rounded-2xl p-8 border border-bakery-100 card-h">
-      <div class="flex gap-1 mb-5">${Array.from({length:5},(_,i)=>i<Math.floor(t.rating)?'<iconify-icon icon="mdi:star" width="16" style="color:#D4A054"></iconify-icon>':i<t.rating?'<iconify-icon icon="mdi:star-half-full" width="16" style="color:#D4A054"></iconify-icon>':'<iconify-icon icon="mdi:star-outline" width="16" style="color:#E8DDD2"></iconify-icon>').join('')}</div>
-      <p class="editable-text text-choco-600 font-light leading-relaxed italic" data-edit-path="testimonials.${t.id}.text">"${t.text}"</p>
-      ${t.image ? `<div class="mt-4 rounded-xl overflow-hidden"><img src="${t.image}" alt="Testimoni" class="w-full h-40 object-cover hover:scale-105 transition-transform duration-500"></div>` : ''}
-      <div class="mt-6 flex items-center gap-3">
-        <div class="w-10 h-10 rounded-full bg-bakery-200 flex items-center justify-center">
-          <span class="editable-text text-sm font-semibold text-bakery-600" data-edit-path="testimonials.${t.id}.initials">${t.initials}</span>
-        </div>
-        <div>
-          <p class="editable-text text-sm font-medium text-choco-800" data-edit-path="testimonials.${t.id}.name">${t.name}</p>
-          <p class="editable-text text-xs text-choco-300" data-edit-path="testimonials.${t.id}.location">${t.location}</p>
-        </div>
+  html+=`<section id="s-testimonials" class="py-20 sm:py-28 bg-cream-50 overflow-hidden"><div class="w-full mx-auto px-5 sm:px-8">
+    <div class="text-center mb-10 sm:mb-16 reveal">
+      <span class="inline-block text-[10px] font-bold tracking-[0.25em] uppercase text-bakery-500 mb-4">Testimoni</span>
+      <h2 class="font-serif text-3xl sm:text-5xl font-light text-choco-900 tracking-tight">Kata Mereka</h2>
+    </div>
+    
+    <div class="marquee-horiz-container hide-scrollbar reveal">
+      <div class="marquee-horiz-track">
+        ${[...D.testimonials, ...D.testimonials].map(t=>`<div class="shrink-0 w-[85vw] sm:w-[400px] bg-white rounded-2xl p-8 border border-bakery-100 card-h">
+          <div class="flex gap-1 mb-5">${Array.from({length:5},(_,i)=>i<Math.floor(t.rating)?'<iconify-icon icon="mdi:star" width="16" style="color:#D4A054"></iconify-icon>':i<t.rating?'<iconify-icon icon="mdi:star-half-full" width="16" style="color:#D4A054"></iconify-icon>':'<iconify-icon icon="mdi:star-outline" width="16" style="color:#E8DDD2"></iconify-icon>').join('')}</div>
+          <p class="editable-text text-choco-600 font-light leading-relaxed italic" data-edit-path="testimonials.${t.id}.text">"${t.text}"</p>
+          ${t.image ? `<div class="mt-4 rounded-xl overflow-hidden"><img src="${t.image}" alt="Testimoni" class="w-full h-40 object-cover hover:scale-105 transition-transform duration-500"></div>` : ''}
+          <div class="mt-6 flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-bakery-200 flex items-center justify-center">
+              <span class="editable-text text-sm font-semibold text-bakery-600" data-edit-path="testimonials.${t.id}.initials">${t.initials}</span>
+            </div>
+            <div>
+              <p class="editable-text text-sm font-medium text-choco-800" data-edit-path="testimonials.${t.id}.name">${t.name}</p>
+              <p class="editable-text text-xs text-choco-300" data-edit-path="testimonials.${t.id}.location">${t.location}</p>
+            </div>
+          </div>
+        </div>`).join('')}
       </div>
-    </div>`).join('')}</div>
+    </div>
   </div></section>`;
 
   let editContactBtn = '';
@@ -2411,12 +2525,7 @@ function renderASection(id){
 
 function renderDash(){
   const ap=D.products.filter(p=>p.status==='active').length,tv=D.products.filter(p=>p.status==='active').reduce((s,p)=>s+p.price,0);
-  let orders = [];
-  try {
-    const s = localStorage.getItem('arazack_orders');
-    if (s) orders = JSON.parse(s);
-  } catch(err) {}
-  const pendingOrders = orders.filter(o => o.status === 'Pending').length;
+  const pendingOrders = (D.orders || []).filter(o => o.status === 'Pending').length;
 
   return `<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
     <div class="bg-white rounded-2xl p-5 border border-bakery-100"><div class="w-10 h-10 rounded-xl bg-bakery-100 flex items-center justify-center mb-3"><iconify-icon icon="mdi:cake-variant" width="20" style="color:#B8860B"></iconify-icon></div><p class="text-2xl font-semibold text-choco-900">${ap}</p><p class="text-xs text-choco-400 mt-1">Produk Aktif</p></div>
@@ -2448,16 +2557,13 @@ function getProdRows(){
 }
 
 function renderAOrders(){
-  let orders = [];
-  try {
-    const s = localStorage.getItem('arazack_orders');
-    if (s) orders = JSON.parse(s);
-  } catch(err) {}
+  const orders = D.orders || [];
 
   const rows = orders.map((o, idx) => {
     let statusClass = 'bg-yellow-100 text-yellow-800';
     if (o.status === 'Selesai') statusClass = 'bg-green-100 text-green-800';
     else if (o.status === 'Dibatalkan') statusClass = 'bg-red-100 text-red-800';
+    else if (o.status === 'Menunggu Batal') statusClass = 'bg-orange-100 text-orange-800 animate-pulse border border-orange-300';
 
     let payClass = 'bg-gray-100 text-gray-700 border border-gray-200';
     if (o.paymentMethod === 'QRIS') payClass = 'bg-purple-100 text-purple-700 border border-purple-200';
@@ -2472,6 +2578,7 @@ function renderAOrders(){
         <td class="px-4 py-4">
           <p class="text-xs font-semibold text-choco-900">${o.customer?.name || 'Umum'}</p>
           <p class="text-[10px] text-choco-400">${o.customer?.phone || '-'}</p>
+          <p class="text-[10px] text-choco-400 truncate max-w-[120px]" title="${o.customer?.email || '-'}">${o.customer?.email || '-'}</p>
         </td>
         <td class="px-4 py-4 text-xs text-choco-700 max-w-[200px] truncate" title="${itemsStr}">${itemsStr}</td>
         <td class="px-4 py-4 text-xs font-semibold text-bakery-600">Rp ${o.total.toLocaleString('id-ID')}</td>
@@ -2483,10 +2590,14 @@ function renderAOrders(){
         </td>
         <td class="px-4 py-4 text-center">
           <div class="flex items-center justify-center gap-1.5">
-            <button onclick="updateOrderStatus('${o.id}', 'Selesai')" class="w-7 h-7 rounded-lg flex items-center justify-center bg-green-50 hover:bg-green-100 text-green-700" title="Tandai Selesai"><iconify-icon icon="mdi:check-bold" width="14"></iconify-icon></button>
-            <button onclick="updateOrderStatus('${o.id}', 'Dibatalkan')" class="w-7 h-7 rounded-lg flex items-center justify-center bg-red-50 hover:bg-red-100 text-red-600" title="Batalkan Pesanan"><iconify-icon icon="mdi:cancel" width="14"></iconify-icon></button>
-            <button onclick="resendOrderWA(${idx})" class="w-7 h-7 rounded-lg flex items-center justify-center bg-blue-50 hover:bg-blue-100 text-blue-600" title="Kirim Ulang WA"><iconify-icon icon="mdi:whatsapp" width="14"></iconify-icon></button>
-            <button onclick="deleteOrder('${o.id}')" class="w-7 h-7 rounded-lg flex items-center justify-center bg-gray-50 hover:bg-gray-100 text-gray-500" title="Hapus Log"><iconify-icon icon="mdi:delete-outline" width="14"></iconify-icon></button>
+            ${o.status === 'Menunggu Batal' ? `
+              <button onclick="approveCancelRequest('${o.id}')" class="w-7 h-7 rounded-lg flex items-center justify-center bg-green-50 hover:bg-green-100 text-green-700" title="Setujui Batal"><iconify-icon icon="mdi:check-bold" width="14"></iconify-icon></button>
+              <button onclick="rejectCancelRequest('${o.id}')" class="w-7 h-7 rounded-lg flex items-center justify-center bg-red-50 hover:bg-red-100 text-red-600" title="Tolak Batal"><iconify-icon icon="mdi:close-thick" width="14"></iconify-icon></button>
+            ` : `
+              <button onclick="updateOrderStatus('${o.id}', 'Selesai')" class="w-7 h-7 rounded-lg flex items-center justify-center bg-green-50 hover:bg-green-100 text-green-700" title="Tandai Selesai"><iconify-icon icon="mdi:check-bold" width="14"></iconify-icon></button>
+              <button onclick="updateOrderStatus('${o.id}', 'Dibatalkan')" class="w-7 h-7 rounded-lg flex items-center justify-center bg-red-50 hover:bg-red-100 text-red-600" title="Batalkan Pesanan"><iconify-icon icon="mdi:cancel" width="14"></iconify-icon></button>
+              <button onclick="deleteOrder('${o.id}')" class="w-7 h-7 rounded-lg flex items-center justify-center bg-gray-50 hover:bg-gray-100 text-gray-500" title="Hapus Log"><iconify-icon icon="mdi:delete-outline" width="14"></iconify-icon></button>
+            `}
           </div>
         </td>
       </tr>
@@ -2525,48 +2636,51 @@ function renderAOrders(){
 }
 
 function updateOrderStatus(orderId, newStatus) {
-  let orders = [];
-  try {
-    const s = localStorage.getItem('arazack_orders');
-    if (s) orders = JSON.parse(s);
-  } catch(err) {}
-  
+  const orders = D.orders || [];
   const o = orders.find(x => x.id === orderId);
   if (o) {
     o.status = newStatus;
-    localStorage.setItem('arazack_orders', JSON.stringify(orders));
+    saveD();
     renderASection('orders');
     toast(`Status pesanan ${orderId} berhasil diubah menjadi ${newStatus}!`);
   }
 }
 
+function approveCancelRequest(orderId) {
+  if(!confirm('Setujui pembatalan pesanan ini?')) return;
+  updateOrderStatus(orderId, 'Dibatalkan');
+}
+
+function rejectCancelRequest(orderId) {
+  if(!confirm('Tolak pembatalan pesanan ini?')) return;
+  const orders = D.orders || [];
+  const o = orders.find(x => x.id === orderId);
+  if (o) {
+    o.status = 'Pending';
+    saveD();
+    renderASection('orders');
+    toast(`Pembatalan pesanan ${orderId} ditolak.`);
+  }
+}
+
 function deleteOrder(orderId) {
   if (!confirm(`Hapus catatan transaksi ${orderId}?`)) return;
-  let orders = [];
-  try {
-    const s = localStorage.getItem('arazack_orders');
-    if (s) orders = JSON.parse(s);
-  } catch(err) {}
-  
-  orders = orders.filter(x => x.id !== orderId);
-  localStorage.setItem('arazack_orders', JSON.stringify(orders));
+  D.orders = (D.orders || []).filter(o => o.id !== orderId);
+  saveD();
   renderASection('orders');
   toast('Catatan transaksi berhasil dihapus.');
 }
 
 function clearAllOrders() {
   if (!confirm('Apakah Anda yakin ingin menghapus SELURUH catatan pesanan? Tindakan ini tidak dapat dibatalkan.')) return;
-  localStorage.removeItem('arazack_orders');
+  D.orders = [];
+  saveD();
   renderASection('orders');
   toast('Seluruh catatan pesanan berhasil dibersihkan.');
 }
 
 function resendOrderWA(idx) {
-  let orders = [];
-  try {
-    const s = localStorage.getItem('arazack_orders');
-    if (s) orders = JSON.parse(s);
-  } catch(err) {}
+  const orders = D.orders || [];
   
   const o = orders[idx];
   if (!o) return;
@@ -2978,157 +3092,214 @@ function renderASettings(){
       : _cloudSyncState.status === 'connected'
         ? 'bg-blue-50 border-blue-200 text-blue-700'
         : 'bg-amber-50 border-amber-200 text-amber-800';
-  return `<div class="max-w-3xl space-y-6">
-  <div class="bg-white rounded-2xl p-6 sm:p-8 border border-bakery-100 space-y-5">
-    <h3 class="font-semibold text-choco-900">Brand</h3>
-    <div class="grid grid-cols-2 gap-4">
-      <div>
-        <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Nama Brand</label>
-        <input id="f-sbr" type="text" value="${esc(D.brand.name)}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp">
-      </div>
-      <div>
-        <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Tagline</label>
-        <input id="f-stg" type="text" value="${esc(D.brand.tagline)}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp">
-      </div>
-    </div>
-    
-    <div>
-      <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Logo Brand</label>
-      <div class="flex flex-col sm:flex-row gap-4 items-center bg-cream-50/50 p-4 rounded-xl border border-bakery-100">
-        <div class="w-16 h-16 rounded-full overflow-hidden bg-bakery-100 flex items-center justify-center flex-shrink-0 border border-bakery-200 shadow-inner">
-          <img id="brand-logo-preview" src="${D.brand.logo ? esc(D.brand.logo) : ''}" class="w-full h-full object-cover ${D.brand.logo ? '' : 'hidden'}" alt="Preview Logo">
-          <iconify-icon id="brand-logo-default-icon" icon="mdi:cupcake" width="32" class="text-bakery-400 ${D.brand.logo ? 'hidden' : ''}"></iconify-icon>
-        </div>
-        <div class="flex-1 w-full space-y-3">
-          <div class="flex gap-2">
-            <input id="f-slogo-url" type="text" value="${esc(D.brand.logo || '')}" class="flex-1 w-full px-4 py-2.5 rounded-xl border border-bakery-200 bg-white text-choco-900 text-xs inp" placeholder="URL Logo (otomatis terisi setelah upload)">
-            <label class="flex-shrink-0 cursor-pointer inline-flex items-center gap-1.5 px-4 py-2.5 bg-bakery-100 text-choco-700 hover:bg-bakery-200 text-xs font-bold tracking-wider uppercase rounded-xl transition-colors">
-              <iconify-icon icon="mdi:cloud-upload-outline" width="14"></iconify-icon>Upload
-              <input type="file" accept="image/*" onchange="handleBrandLogoUpload(this)" class="hidden">
-            </label>
-          </div>
-          <p class="text-[10px] text-choco-400">Rasio 1:1 direkomendasikan. File akan disimpan secara lokal atau diunggah ke cloud jika koneksi Supabase aktif.</p>
-        </div>
-      </div>
-    </div>
 
-    <button onclick="D.brand.name=document.getElementById('f-sbr').value;D.brand.tagline=document.getElementById('f-stg').value;D.brand.logo=document.getElementById('f-slogo-url').value;saveD();buildStore();toast('Pengaturan brand disimpan')" class="w-full py-3.5 bg-choco-900 text-cream-100 text-[11px] font-bold tracking-[0.15em] uppercase rounded-xl hover:bg-choco-800 flex items-center justify-center gap-2"><iconify-icon icon="mdi:content-save-outline" width="16"></iconify-icon>Simpan Brand</button>
-  </div>
-  
-  <div class="bg-white rounded-2xl p-6 sm:p-8 border border-bakery-100 space-y-5">
-    <h3 class="font-semibold text-choco-900 flex items-center gap-2"><iconify-icon icon="mdi:qrcode-scan" width="20" style="color:#B8860B"></iconify-icon>Pengaturan QRIS Statis</h3>
-    <div>
-      <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Gambar QRIS Anda</label>
-      <div class="flex flex-col sm:flex-row gap-3 items-center">
-        <input id="f-sqris" type="text" value="${esc(qrisUrl)}" class="flex-1 w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp text-sm" placeholder="Contoh: https://i.imgur.com/your-qris.png atau upload file di samping">
-        <label class="flex-shrink-0 cursor-pointer inline-flex items-center gap-2 px-4 py-3 bg-bakery-100 text-choco-700 hover:bg-bakery-200 text-xs font-bold tracking-wider uppercase rounded-xl transition-colors">
-          <iconify-icon icon="mdi:cloud-upload-outline" width="16"></iconify-icon>Upload QRIS
-          <input type="file" accept="image/*" onchange="const f=this.files[0];if(f){const r=new FileReader();r.onload=e=>{document.getElementById('f-sqris').value=e.target.result;toast('Gambar QRIS berhasil dimuat! Klik Simpan QRIS di bawah.')};r.readAsDataURL(f)}" class="hidden">
-        </label>
+  const defaultReceipt = `Halo Kak *{{name}}*, berikut adalah Struk Belanja Anda dari *Ara & Zack Bakehouse*:
+
+============================
+*ID PESANAN:* {{orderId}}
+*TANGGAL:* {{date}}
+*METODE:* {{method}}
+============================
+
+*DAFTAR PESANAN:*
+{{items}}
+
+*TOTAL TAGIHAN:* Rp {{total}}
+============================
+
+Terima kasih banyak atas pesanannya! Dapur kami sedang memproses pesanan kue lezat Anda. ❤️`;
+  const receiptTpl = D.settings.receiptTemplate || defaultReceipt;
+  return `<div class="max-w-3xl space-y-4">
+  <details open class="bg-white rounded-2xl border border-bakery-100 group">
+    <summary class="p-5 sm:p-6 font-semibold text-choco-900 cursor-pointer list-none flex items-center justify-between hover:bg-cream-50/50 rounded-2xl transition-colors">
+      <span class="flex items-center gap-3"><iconify-icon icon="mdi:storefront-outline" width="22" style="color:#B8860B"></iconify-icon>Brand & Logo</span>
+      <iconify-icon icon="mdi:chevron-down" width="20" class="text-choco-400 group-open:rotate-180 transition-transform"></iconify-icon>
+    </summary>
+    <div class="p-6 pt-2 border-t border-bakery-50 space-y-5">
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Nama Brand</label>
+          <input id="f-sbr" type="text" value="${esc(D.brand.name)}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp">
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Tagline</label>
+          <input id="f-stg" type="text" value="${esc(D.brand.tagline)}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp">
+        </div>
       </div>
-      <p class="text-[10px] text-choco-400 mt-1">Masukkan URL gambar QRIS Anda atau klik tombol "Upload QRIS" untuk memuat file gambar secara langsung dari perangkat Anda.</p>
+      
+      <div>
+        <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Logo Brand</label>
+        <div class="flex flex-col sm:flex-row gap-4 items-center bg-cream-50/50 p-4 rounded-xl border border-bakery-100">
+          <div class="w-16 h-16 rounded-full overflow-hidden bg-bakery-100 flex items-center justify-center flex-shrink-0 border border-bakery-200 shadow-inner">
+            <img id="brand-logo-preview" src="${D.brand.logo ? esc(D.brand.logo) : ''}" class="w-full h-full object-cover ${D.brand.logo ? '' : 'hidden'}" alt="Preview Logo">
+            <iconify-icon id="brand-logo-default-icon" icon="mdi:cupcake" width="32" class="text-bakery-400 ${D.brand.logo ? 'hidden' : ''}"></iconify-icon>
+          </div>
+          <div class="flex-1 w-full space-y-3">
+            <div class="flex gap-2">
+              <input id="f-slogo-url" type="text" value="${esc(D.brand.logo || '')}" class="flex-1 w-full px-4 py-2.5 rounded-xl border border-bakery-200 bg-white text-choco-900 text-xs inp" placeholder="URL Logo (otomatis terisi setelah upload)">
+              <label class="flex-shrink-0 cursor-pointer inline-flex items-center gap-1.5 px-4 py-2.5 bg-bakery-100 text-choco-700 hover:bg-bakery-200 text-xs font-bold tracking-wider uppercase rounded-xl transition-colors">
+                <iconify-icon icon="mdi:cloud-upload-outline" width="14"></iconify-icon>Upload
+                <input type="file" accept="image/*" onchange="handleBrandLogoUpload(this)" class="hidden">
+              </label>
+            </div>
+            <p class="text-[10px] text-choco-400">Rasio 1:1 direkomendasikan. File akan disimpan secara lokal atau diunggah ke cloud jika koneksi Supabase aktif.</p>
+          </div>
+        </div>
+      </div>
+      <button onclick="D.brand.name=document.getElementById('f-sbr').value;D.brand.tagline=document.getElementById('f-stg').value;D.brand.logo=document.getElementById('f-slogo-url').value;saveD();buildStore();toast('Pengaturan brand disimpan')" class="w-full py-3.5 bg-choco-900 text-cream-100 text-[11px] font-bold tracking-[0.15em] uppercase rounded-xl hover:bg-choco-800 flex items-center justify-center gap-2"><iconify-icon icon="mdi:content-save-outline" width="16"></iconify-icon>Simpan Brand</button>
     </div>
-    <button onclick="if(!D.settings)D.settings={};D.settings.qrisImage=document.getElementById('f-sqris').value;saveD();toast('QRIS Statis berhasil disimpan')" class="w-full py-3.5 bg-choco-900 text-cream-100 text-[11px] font-bold tracking-[0.15em] uppercase rounded-xl hover:bg-choco-800 flex items-center justify-center gap-2"><iconify-icon icon="mdi:content-save-outline" width="16"></iconify-icon>Simpan QRIS</button>
-  </div>
-  <div class="bg-white rounded-2xl p-6 sm:p-8 border border-bakery-100 space-y-5">
-    <h3 class="font-semibold text-choco-900 flex items-center gap-2"><iconify-icon icon="mdi:shield-account-outline" width="20" style="color:#B8860B"></iconify-icon>Pengaturan Akses Admin</h3>
-    <div>
-      <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Password Super Admin</label>
-      <input id="f-pwd-admin" type="text" value="${esc(D.settings?.adminPassword || 'admin123')}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp text-sm" placeholder="Password Admin">
-      <p class="text-[10px] text-choco-400 mt-1">Gunakan password ini untuk mendapat akses penuh (mengubah tampilan, produk, pengaturan, dll).</p>
+  </details>
+  
+  <details class="bg-white rounded-2xl border border-bakery-100 group">
+    <summary class="p-5 sm:p-6 font-semibold text-choco-900 cursor-pointer list-none flex items-center justify-between hover:bg-cream-50/50 rounded-2xl transition-colors">
+      <span class="flex items-center gap-3"><iconify-icon icon="mdi:qrcode-scan" width="22" style="color:#B8860B"></iconify-icon>Pengaturan QRIS Statis</span>
+      <iconify-icon icon="mdi:chevron-down" width="20" class="text-choco-400 group-open:rotate-180 transition-transform"></iconify-icon>
+    </summary>
+    <div class="p-6 pt-2 border-t border-bakery-50 space-y-5">
+      <div>
+        <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Gambar QRIS Anda</label>
+        <div class="flex flex-col sm:flex-row gap-3 items-center">
+          <input id="f-sqris" type="text" value="${esc(qrisUrl)}" class="flex-1 w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp text-sm" placeholder="Contoh: https://i.imgur.com/your-qris.png atau upload file di samping">
+          <label class="flex-shrink-0 cursor-pointer inline-flex items-center gap-2 px-4 py-3 bg-bakery-100 text-choco-700 hover:bg-bakery-200 text-xs font-bold tracking-wider uppercase rounded-xl transition-colors">
+            <iconify-icon icon="mdi:cloud-upload-outline" width="16"></iconify-icon>Upload QRIS
+            <input type="file" accept="image/*" onchange="const f=this.files[0];if(f){const r=new FileReader();r.onload=e=>{document.getElementById('f-sqris').value=e.target.result;toast('Gambar QRIS berhasil dimuat! Klik Simpan QRIS di bawah.')};r.readAsDataURL(f)}" class="hidden">
+          </label>
+        </div>
+        <p class="text-[10px] text-choco-400 mt-1">Masukkan URL gambar QRIS Anda atau klik tombol "Upload QRIS" untuk memuat file gambar secara langsung dari perangkat Anda.</p>
+      </div>
+      <button onclick="if(!D.settings)D.settings={};D.settings.qrisImage=document.getElementById('f-sqris').value;saveD();toast('QRIS Statis berhasil disimpan')" class="w-full py-3.5 bg-choco-900 text-cream-100 text-[11px] font-bold tracking-[0.15em] uppercase rounded-xl hover:bg-choco-800 flex items-center justify-center gap-2"><iconify-icon icon="mdi:content-save-outline" width="16"></iconify-icon>Simpan QRIS</button>
     </div>
-    <div>
-      <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Password Staff / Kasir</label>
-      <input id="f-pwd-staff" type="text" value="${esc(D.settings?.staffPassword || 'kasir123')}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp text-sm" placeholder="Password Staff">
-      <p class="text-[10px] text-choco-400 mt-1">Gunakan password ini untuk akses operasional (Pesanan, Produk, Kategori) tanpa hak ubah tampilan.</p>
+  </details>
+  
+  <details class="bg-white rounded-2xl border border-bakery-100 group">
+    <summary class="p-5 sm:p-6 font-semibold text-choco-900 cursor-pointer list-none flex items-center justify-between hover:bg-cream-50/50 rounded-2xl transition-colors">
+      <span class="flex items-center gap-3"><iconify-icon icon="mdi:receipt-text-outline" width="22" style="color:#B8860B"></iconify-icon>Template Struk WhatsApp</span>
+      <iconify-icon icon="mdi:chevron-down" width="20" class="text-choco-400 group-open:rotate-180 transition-transform"></iconify-icon>
+    </summary>
+    <div class="p-6 pt-2 border-t border-bakery-50 space-y-5">
+      <div>
+        <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Format Teks</label>
+        <textarea id="f-receipt-tpl" rows="12" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp text-sm resize-y leading-relaxed font-mono whitespace-pre">${esc(receiptTpl)}</textarea>
+        <p class="text-[10px] text-choco-400 mt-2">Gunakan variabel ini: <code class="bg-bakery-100 px-1 py-0.5 rounded text-bakery-700">{{name}}</code>, <code class="bg-bakery-100 px-1 py-0.5 rounded text-bakery-700">{{orderId}}</code>, <code class="bg-bakery-100 px-1 py-0.5 rounded text-bakery-700">{{date}}</code>, <code class="bg-bakery-100 px-1 py-0.5 rounded text-bakery-700">{{method}}</code>, <code class="bg-bakery-100 px-1 py-0.5 rounded text-bakery-700">{{items}}</code>, dan <code class="bg-bakery-100 px-1 py-0.5 rounded text-bakery-700">{{total}}</code>. Mereka akan otomatis diganti dengan data asli.</p>
+      </div>
+      <button onclick="if(!D.settings)D.settings={};D.settings.receiptTemplate=document.getElementById('f-receipt-tpl').value;saveD();toast('Template struk berhasil disimpan!')" class="w-full py-3.5 bg-choco-900 text-cream-100 text-[11px] font-bold tracking-[0.15em] uppercase rounded-xl hover:bg-choco-800 flex items-center justify-center gap-2"><iconify-icon icon="mdi:content-save-outline" width="16"></iconify-icon>Simpan Template Struk</button>
     </div>
-    <button onclick="if(!D.settings)D.settings={};D.settings.adminPassword=document.getElementById('f-pwd-admin').value;D.settings.staffPassword=document.getElementById('f-pwd-staff').value;saveD();toast('Password Akses Admin berhasil disimpan!')" class="w-full py-3.5 bg-choco-900 text-cream-100 text-[11px] font-bold tracking-[0.15em] uppercase rounded-xl hover:bg-choco-800 flex items-center justify-center gap-2"><iconify-icon icon="mdi:content-save-outline" width="16"></iconify-icon>Simpan Password</button>
-  </div>
-  <div class="bg-white rounded-2xl p-6 sm:p-8 border border-bakery-100 space-y-4">
-    <h3 class="font-semibold text-choco-900">Data</h3>
-    <div class="grid sm:grid-cols-2 gap-4">
-      <button onclick="const b=new Blob([JSON.stringify(D,null,2)],{type:'application/json'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download='arazack-data.json';a.click();URL.revokeObjectURL(u);toast('Data diexport')" class="flex items-center justify-center gap-2 px-5 py-3 border border-bakery-200 rounded-xl text-sm font-medium text-choco-700 hover:bg-bakery-50"><iconify-icon icon="mdi:download" width="18" style="color:#B8860B"></iconify-icon>Export JSON</button>
-      <label class="flex items-center justify-center gap-2 px-5 py-3 border border-bakery-200 rounded-xl text-sm font-medium text-choco-700 hover:bg-bakery-50 cursor-pointer"><iconify-icon icon="mdi:upload" width="18" style="color:#B8860B"></iconify-icon>Import JSON<input type="file" accept=".json" onchange="const f=this.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{try{D=JSON.parse(e.target.result);saveD();toast('Diimport!');setTimeout(()=>location.reload(),1000)}catch(err){toast('File error')}};r.readAsText(f)" class="hidden"></label>
+  </details>
+  
+  <details class="bg-white rounded-2xl border border-bakery-100 group">
+    <summary class="p-5 sm:p-6 font-semibold text-choco-900 cursor-pointer list-none flex items-center justify-between hover:bg-cream-50/50 rounded-2xl transition-colors">
+      <span class="flex items-center gap-3"><iconify-icon icon="mdi:shield-account-outline" width="22" style="color:#B8860B"></iconify-icon>Pengaturan Akses Admin</span>
+      <iconify-icon icon="mdi:chevron-down" width="20" class="text-choco-400 group-open:rotate-180 transition-transform"></iconify-icon>
+    </summary>
+    <div class="p-6 pt-2 border-t border-bakery-50 space-y-5">
+      <div>
+        <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Password Super Admin</label>
+        <input id="f-pwd-admin" type="text" value="${esc(D.settings?.adminPassword || 'admin123')}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp text-sm" placeholder="Password Admin">
+        <p class="text-[10px] text-choco-400 mt-1">Gunakan password ini untuk mendapat akses penuh (mengubah tampilan, produk, pengaturan, dll).</p>
+      </div>
+      <div>
+        <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Password Staff / Kasir</label>
+        <input id="f-pwd-staff" type="text" value="${esc(D.settings?.staffPassword || 'kasir123')}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp text-sm" placeholder="Password Staff">
+        <p class="text-[10px] text-choco-400 mt-1">Gunakan password ini untuk akses operasional (Pesanan, Produk, Kategori) tanpa hak ubah tampilan.</p>
+      </div>
+      <button onclick="if(!D.settings)D.settings={};D.settings.adminPassword=document.getElementById('f-pwd-admin').value;D.settings.staffPassword=document.getElementById('f-pwd-staff').value;saveD();toast('Password Akses Admin berhasil disimpan!')" class="w-full py-3.5 bg-choco-900 text-cream-100 text-[11px] font-bold tracking-[0.15em] uppercase rounded-xl hover:bg-choco-800 flex items-center justify-center gap-2"><iconify-icon icon="mdi:content-save-outline" width="16"></iconify-icon>Simpan Password</button>
     </div>
-    <button onclick="if(confirm('Reset semua data?')){localStorage.removeItem('arazack_data');location.reload()}" class="w-full flex items-center justify-center gap-2 px-5 py-3 border border-red-200 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50"><iconify-icon icon="mdi:delete-alert-outline" width="18"></iconify-icon>Reset ke Default</button>
-  </div>
+  </details>
+
+  <details class="bg-white rounded-2xl border border-bakery-100 group">
+    <summary class="p-5 sm:p-6 font-semibold text-choco-900 cursor-pointer list-none flex items-center justify-between hover:bg-cream-50/50 rounded-2xl transition-colors">
+      <span class="flex items-center gap-3"><iconify-icon icon="mdi:database-export-outline" width="22" style="color:#B8860B"></iconify-icon>Manajemen Data Luring</span>
+      <iconify-icon icon="mdi:chevron-down" width="20" class="text-choco-400 group-open:rotate-180 transition-transform"></iconify-icon>
+    </summary>
+    <div class="p-6 pt-2 border-t border-bakery-50 space-y-4">
+      <div class="grid sm:grid-cols-2 gap-4">
+        <button onclick="const b=new Blob([JSON.stringify(D,null,2)],{type:'application/json'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download='arazack-data.json';a.click();URL.revokeObjectURL(u);toast('Data diexport')" class="flex items-center justify-center gap-2 px-5 py-3 border border-bakery-200 rounded-xl text-sm font-medium text-choco-700 hover:bg-bakery-50"><iconify-icon icon="mdi:download" width="18" style="color:#B8860B"></iconify-icon>Export JSON</button>
+        <label class="flex items-center justify-center gap-2 px-5 py-3 border border-bakery-200 rounded-xl text-sm font-medium text-choco-700 hover:bg-bakery-50 cursor-pointer"><iconify-icon icon="mdi:upload" width="18" style="color:#B8860B"></iconify-icon>Import JSON<input type="file" accept=".json" onchange="const f=this.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{try{D=JSON.parse(e.target.result);saveD();toast('Diimport!');setTimeout(()=>location.reload(),1000)}catch(err){toast('File error')}};r.readAsText(f)" class="hidden"></label>
+      </div>
+      <button onclick="if(confirm('Reset semua data?')){localStorage.removeItem('arazack_data');location.reload()}" class="w-full flex items-center justify-center gap-2 px-5 py-3 border border-red-200 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50"><iconify-icon icon="mdi:delete-alert-outline" width="18"></iconify-icon>Reset ke Default</button>
+    </div>
+  </details>
 
   <!-- SUPABASE CONFIG -->
-  <div class="bg-white rounded-2xl p-6 sm:p-8 border-2 ${_sb ? 'border-green-200' : 'border-bakery-300 border-dashed'} space-y-5">
-    <div class="flex items-center justify-between">
-      <h3 class="font-semibold text-choco-900 flex items-center gap-2">
-        <iconify-icon icon="mdi:database-outline" width="20" style="color:#B8860B"></iconify-icon>
-        Koneksi Supabase
-      </h3>
-      <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${_sb ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}">
-        ${_sb ? '✅ Aktif' : '⚠️ Belum Aktif'}
-      </span>
-    </div>
-    <p class="text-xs text-choco-400">Konfigurasi Supabase disimpan di file <code class="bg-cream-100 px-1.5 py-0.5 rounded font-mono">.env</code> di folder proyek — lebih aman dari disimpan di browser.</p>
+  <details class="bg-white rounded-2xl border-2 ${_sb ? 'border-green-200' : 'border-bakery-300 border-dashed'} group">
+    <summary class="p-5 sm:p-6 font-semibold text-choco-900 cursor-pointer list-none flex items-center justify-between hover:bg-cream-50/50 rounded-2xl transition-colors">
+      <div class="flex items-center gap-3">
+        <iconify-icon icon="mdi:database-outline" width="22" style="color:#B8860B"></iconify-icon>
+        Koneksi Supabase (Cloud)
+        <span class="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ml-1 ${_sb ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}">
+          ${_sb ? '✅ Aktif' : '⚠️ Belum Aktif'}
+        </span>
+      </div>
+      <iconify-icon icon="mdi:chevron-down" width="20" class="text-choco-400 group-open:rotate-180 transition-transform"></iconify-icon>
+    </summary>
+    <div class="p-6 pt-2 border-t border-bakery-50 space-y-5">
+      <p class="text-xs text-choco-400">Konfigurasi Supabase disimpan di file <code class="bg-cream-100 px-1.5 py-0.5 rounded font-mono">.env</code> di folder proyek — lebih aman dari disimpan di browser.</p>
 
-    <div class="border rounded-xl p-4 ${syncTone}">
-      <p class="text-xs font-semibold uppercase tracking-wider">Status Sinkronisasi</p>
-      <p class="text-[11px] mt-1">${esc(_cloudSyncState.message)}</p>
-      <p class="text-[11px] mt-2">Ukuran data saat ini: <span class="font-mono">${cloudDiag.sizeLabel}</span></p>
-      <p class="text-[11px] mt-1">Media lokal (data: / blob:): <span class="font-mono">${cloudDiag.localMediaCount}</span></p>
-    </div>
+      <div class="border rounded-xl p-4 ${syncTone}">
+        <p class="text-xs font-semibold uppercase tracking-wider">Status Sinkronisasi</p>
+        <p class="text-[11px] mt-1">${esc(_cloudSyncState.message)}</p>
+        <p class="text-[11px] mt-2">Ukuran data saat ini: <span class="font-mono">${cloudDiag.sizeLabel}</span></p>
+        <p class="text-[11px] mt-1">Media lokal (data: / blob:): <span class="font-mono">${cloudDiag.localMediaCount}</span></p>
+      </div>
 
-    ${_sb ? `
-      <div class="bg-green-50 border border-green-200 rounded-xl p-4 space-y-2">
-        <p class="text-xs font-semibold text-green-700 flex items-center gap-2"><iconify-icon icon="mdi:cloud-check" width="16"></iconify-icon>Supabase terhubung & aktif</p>
-        <p class="text-[11px] text-green-600">URL: <span class="font-mono">${_sbUrlDisplay}</span></p>
-        <p class="text-[11px] text-green-600">Sumber konfigurasi: <span class="font-mono">${activeSbSource}</span></p>
-        <p class="text-[11px] text-green-600">Upload file akan otomatis ke Supabase Storage. Semua data disimpan ke database cloud.</p>
-      </div>
-      <button onclick="syncToSupabase().then(ok=>toast(ok?'✅ Data berhasil disinkronkan ke Supabase!':'⚠️ Gagal sync ke Supabase. Data mungkin masih hanya ada di browser ini.'))"
-        class="w-full py-3 bg-green-600 text-white text-[11px] font-bold tracking-wider uppercase rounded-xl hover:bg-green-700 flex items-center justify-center gap-2">
-        <iconify-icon icon="mdi:cloud-sync-outline" width="16"></iconify-icon>Sync Data ke Supabase Sekarang
-      </button>
-    ` : `
-      <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-3 text-xs text-amber-800">
-        <p class="font-semibold">📋 Cara mengaktifkan Supabase:</p>
-        <ol class="space-y-2 list-decimal list-inside leading-relaxed">
-          <li>Buka <a href="https://supabase.com" target="_blank" class="text-bakery-500 underline font-semibold">supabase.com</a> → Daftar/Login gratis</li>
-          <li>Klik <strong>New Project</strong> → tunggu selesai (~2 menit)</li>
-          <li>Buka <strong>Project Settings → API</strong> → copy <strong>Project URL</strong> dan <strong>anon key</strong></li>
-          <li>Buka file <code class="bg-amber-100 px-1 rounded font-mono">arazack/.env</code> di VS Code</li>
-          <li>Ganti baris berikut dengan nilai Anda:<br>
-            <code class="block mt-1 bg-amber-100 p-2 rounded font-mono text-[10px] leading-relaxed">
-              VITE_SUPABASE_URL=https://xxxx.supabase.co<br>
-              VITE_SUPABASE_ANON_KEY=eyJhbG...
-            </code>
-          </li>
-          <li>Simpan file <code class="bg-amber-100 px-1 rounded font-mono">.env</code> → <strong>restart dev server</strong> (Ctrl+C lalu npm run dev)</li>
-          <li>Buka <strong>SQL Editor</strong> di Supabase → jalankan isi file <code class="bg-amber-100 px-1 rounded font-mono">supabase-setup.sql</code></li>
-          <li>File itu akan membuat tabel <strong>site_data</strong>, bucket <strong>media</strong>, dan policy upload yang dibutuhkan</li>
-        </ol>
-      </div>
-    `}
-
-    <div class="border border-bakery-200 rounded-xl p-4 space-y-4 bg-cream-50">
-      <div>
-        <h4 class="text-sm font-semibold text-choco-900">Aktifkan Langsung dari Browser</h4>
-        <p class="text-[11px] text-choco-400 mt-1">Pakai ini jika halaman yang sedang Anda buka belum membaca <code class="bg-white px-1 rounded font-mono">.env</code>. Jika <code class="bg-white px-1 rounded font-mono">.env</code> aktif, konfigurasi browser hanya menjadi cadangan.</p>
-      </div>
-      <div>
-        <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Supabase URL</label>
-        <input id="f-sburl" type="text" value="${esc(storedSb.url)}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-white text-choco-900 inp text-sm" placeholder="https://xxxx.supabase.co">
-      </div>
-      <div>
-        <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Supabase Anon Key</label>
-        <textarea id="f-sbkey" rows="3" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-white text-choco-900 inp text-sm resize-none" placeholder="eyJhbGciOi...">${esc(storedSb.key)}</textarea>
-      </div>
-      <div class="grid sm:grid-cols-2 gap-3">
-        <button onclick="saveSupabaseConfigFromSettings()" class="w-full py-3 bg-choco-900 text-white text-[11px] font-bold tracking-wider uppercase rounded-xl hover:bg-choco-800 flex items-center justify-center gap-2">
-          <iconify-icon icon="mdi:content-save-outline" width="16"></iconify-icon>Simpan & Aktifkan
+      ${_sb ? `
+        <div class="bg-green-50 border border-green-200 rounded-xl p-4 space-y-2">
+          <p class="text-xs font-semibold text-green-700 flex items-center gap-2"><iconify-icon icon="mdi:cloud-check" width="16"></iconify-icon>Supabase terhubung & aktif</p>
+          <p class="text-[11px] text-green-600">URL: <span class="font-mono">${_sbUrlDisplay}</span></p>
+          <p class="text-[11px] text-green-600">Sumber konfigurasi: <span class="font-mono">${activeSbSource}</span></p>
+          <p class="text-[11px] text-green-600">Upload file akan otomatis ke Supabase Storage. Semua data disimpan ke database cloud.</p>
+        </div>
+        <button onclick="syncToSupabase().then(ok=>toast(ok?'✅ Data berhasil disinkronkan ke Supabase!':'⚠️ Gagal sync ke Supabase. Data mungkin masih hanya ada di browser ini.'))"
+          class="w-full py-3 bg-green-600 text-white text-[11px] font-bold tracking-wider uppercase rounded-xl hover:bg-green-700 flex items-center justify-center gap-2">
+          <iconify-icon icon="mdi:cloud-sync-outline" width="16"></iconify-icon>Sync Data ke Supabase Sekarang
         </button>
-        <button onclick="clearSupabaseConfigFromSettings()" class="w-full py-3 border border-bakery-200 text-choco-700 text-[11px] font-bold tracking-wider uppercase rounded-xl hover:bg-bakery-50 flex items-center justify-center gap-2">
-          <iconify-icon icon="mdi:delete-outline" width="16"></iconify-icon>Hapus Cadangan Browser
-        </button>
+      ` : `
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-3 text-xs text-amber-800">
+          <p class="font-semibold">📋 Cara mengaktifkan Supabase:</p>
+          <ol class="space-y-2 list-decimal list-inside leading-relaxed">
+            <li>Buka <a href="https://supabase.com" target="_blank" class="text-bakery-500 underline font-semibold">supabase.com</a> → Daftar/Login gratis</li>
+            <li>Klik <strong>New Project</strong> → tunggu selesai (~2 menit)</li>
+            <li>Buka <strong>Project Settings → API</strong> → copy <strong>Project URL</strong> dan <strong>anon key</strong></li>
+            <li>Buka file <code class="bg-amber-100 px-1 rounded font-mono">arazack/.env</code> di VS Code</li>
+            <li>Ganti baris berikut dengan nilai Anda:<br>
+              <code class="block mt-1 bg-amber-100 p-2 rounded font-mono text-[10px] leading-relaxed">
+                VITE_SUPABASE_URL=https://xxxx.supabase.co<br>
+                VITE_SUPABASE_ANON_KEY=eyJhbG...
+              </code>
+            </li>
+            <li>Simpan file <code class="bg-amber-100 px-1 rounded font-mono">.env</code> → <strong>restart dev server</strong> (Ctrl+C lalu npm run dev)</li>
+            <li>Buka <strong>SQL Editor</strong> di Supabase → jalankan isi file <code class="bg-amber-100 px-1 rounded font-mono">supabase-setup.sql</code></li>
+            <li>File itu akan membuat tabel <strong>site_data</strong>, bucket <strong>media</strong>, dan policy upload yang dibutuhkan</li>
+          </ol>
+        </div>
+      `}
+
+      <div class="border border-bakery-200 rounded-xl p-4 space-y-4 bg-cream-50">
+        <div>
+          <h4 class="text-sm font-semibold text-choco-900">Aktifkan Langsung dari Browser</h4>
+          <p class="text-[11px] text-choco-400 mt-1">Pakai ini jika halaman yang sedang Anda buka belum membaca <code class="bg-white px-1 rounded font-mono">.env</code>. Jika <code class="bg-white px-1 rounded font-mono">.env</code> aktif, konfigurasi browser hanya menjadi cadangan.</p>
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Supabase URL</label>
+          <input id="f-sburl" type="text" value="${esc(storedSb.url)}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-white text-choco-900 inp text-sm" placeholder="https://xxxx.supabase.co">
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Supabase Anon Key</label>
+          <textarea id="f-sbkey" rows="3" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-white text-choco-900 inp text-sm resize-none" placeholder="eyJhbGciOi...">${esc(storedSb.key)}</textarea>
+        </div>
+        <div class="grid sm:grid-cols-2 gap-3">
+          <button onclick="saveSupabaseConfigFromSettings()" class="w-full py-3 bg-choco-900 text-white text-[11px] font-bold tracking-wider uppercase rounded-xl hover:bg-choco-800 flex items-center justify-center gap-2">
+            <iconify-icon icon="mdi:content-save-outline" width="16"></iconify-icon>Simpan & Aktifkan
+          </button>
+          <button onclick="clearSupabaseConfigFromSettings()" class="w-full py-3 border border-bakery-200 text-choco-700 text-[11px] font-bold tracking-wider uppercase rounded-xl hover:bg-bakery-50 flex items-center justify-center gap-2">
+            <iconify-icon icon="mdi:delete-outline" width="16"></iconify-icon>Hapus Cadangan Browser
+          </button>
+        </div>
       </div>
     </div>
-  </div>
-</div>`}
+  </details>
+</div>`;
+}
 
 function saveSupabaseConfigFromSettings() {
   const url = document.getElementById('f-sburl')?.value?.trim() || '';
