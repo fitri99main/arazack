@@ -260,7 +260,7 @@
 
   <!-- Nav -->
   <nav id="s-nav" class="fixed top-0 left-0 right-0 z-50 transition-all duration-500" style="backdrop-filter:blur(24px)">
-    <div class="max-w-7xl mx-auto px-5 sm:px-8 flex items-center justify-between h-16 sm:h-20">
+    <div class="w-full 2xl:px-12 mx-auto px-5 sm:px-8 flex items-center justify-between h-16 sm:h-20">
       <div class="flex items-center gap-2 sm:gap-4">
         <a href="#" class="flex items-center gap-2 group" onclick="event.preventDefault()">
           <div id="nav-logo-container" class="w-9 h-9 rounded-full overflow-hidden bg-bakery-500 flex items-center justify-center transition-transform duration-500 group-hover:rotate-12"><iconify-icon icon="mdi:cupcake" width="20" style="color:white"></iconify-icon></div>
@@ -320,6 +320,27 @@
   </button>
 </div>
 
+<!-- Admin Login Modal -->
+<div id="admin-login-modal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+  <div class="bg-white rounded-3xl w-full max-w-sm p-8 shadow-2xl relative overflow-hidden">
+    <button onclick="closeAdminLogin()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-bakery-50 flex items-center justify-center text-bakery-500 hover:bg-bakery-100 transition-colors">
+      <iconify-icon icon="mdi:close" width="18"></iconify-icon>
+    </button>
+    <div class="w-16 h-16 bg-bakery-50 rounded-full flex items-center justify-center mx-auto mb-6">
+      <iconify-icon icon="mdi:shield-lock-outline" width="32" class="text-bakery-600"></iconify-icon>
+    </div>
+    <h3 class="text-xl font-serif font-bold text-center text-choco-900 mb-2">Akses Admin</h3>
+    <p class="text-xs text-center text-choco-400 mb-6">Silakan masukkan password untuk melanjutkan</p>
+    
+    <div class="mb-6">
+      <label class="block text-[10px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Password</label>
+      <input id="admin-login-password" type="password" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp text-sm" placeholder="••••••••" onkeypress="if(event.key==='Enter') doAdminLogin()">
+    </div>
+    
+    <button onclick="doAdminLogin()" class="w-full py-3.5 bg-bakery-500 hover:bg-bakery-600 text-white font-bold rounded-xl shadow-lg shadow-bakery-200/50 transition-all uppercase tracking-wider text-xs">Masuk</button>
+  </div>
+</div>
+
 <!-- ============================== ADMIN VIEW ============================== -->
 <div id="V-ADMIN" class="hidden">
   <div id="a-overlay" class="fixed inset-0 bg-black/30 z-40 hidden lg:hidden" onclick="document.getElementById('a-side').classList.remove('open');this.classList.add('hidden')"></div>
@@ -327,7 +348,7 @@
   <aside id="a-side" class="a-side fixed top-0 left-0 bottom-0 bg-white border-r border-bakery-100 z-50 flex flex-col">
     <div class="p-5 border-b border-bakery-100"><div class="flex items-center gap-2.5"><div id="admin-logo-container" class="w-9 h-9 rounded-full overflow-hidden bg-bakery-500 flex items-center justify-center"><iconify-icon icon="mdi:cupcake" width="18" style="color:white"></iconify-icon></div><div><span id="admin-brand-name" class="font-serif text-base font-semibold text-choco-900">Ara&Zack</span><span class="block text-[8px] tracking-[0.3em] uppercase text-bakery-500 font-bold -mt-0.5">Admin Panel</span></div></div></div>
     <nav class="flex-1 py-4 overflow-y-auto" id="a-nav"></nav>
-    <div class="p-4 border-t border-bakery-100"><div class="flex items-center gap-3"><div class="w-9 h-9 rounded-full bg-bakery-200 flex items-center justify-center"><span class="text-xs font-bold text-bakery-600">AZ</span></div><div class="flex-1"><p class="text-sm font-medium text-choco-800">Admin</p><p class="text-[10px] text-choco-300">Super Admin</p></div></div></div>
+    <div class="p-4 border-t border-bakery-100"><div class="flex items-center gap-3"><div class="w-9 h-9 rounded-full bg-bakery-200 flex items-center justify-center"><span class="text-xs font-bold text-bakery-600">AZ</span></div><div class="flex-1"><p id="admin-sidebar-name" class="text-sm font-medium text-choco-800">Admin</p><p id="admin-sidebar-role" class="text-[10px] text-choco-300 uppercase tracking-widest">Super Admin</p></div><button onclick="logoutAdmin()" title="Keluar" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-bakery-50 text-choco-400 hover:text-red-500 transition-colors"><iconify-icon icon="mdi:logout" width="18"></iconify-icon></button></div></div>
   </aside>
 
   <main class="lg:ml-[260px] min-h-screen">
@@ -380,7 +401,8 @@ const DEF={
   ],
   offer:{enabled:true,title:'Custom Cake untuk',highlight:'Momen Spesial Anda',desc:'Ulang tahun, pernikahan, anniversary — kami buatkan kue impian yang sempurna untuk setiap momen berharga Anda.',btn:'Pesan Custom Cake',image:'https://z-cdn-media.chatglm.cn/files/00f33e73-cbb7-4f43-b899-fbd1ca413563.jpg?auth_key=1879098274-b3f97d85ecaf4f0bb6e76c5d3a57aa01-0-e3e0ac47a1f529ee2c41711b441baf9c'},
   contact:{address:'Jl. Kecantikan No. 88, Jakarta Selatan 12345',phone:'+62 812 3456 7890',whatsapp:'6281234567890',hours1:'Sen - Sab: 08:00 - 21:00',hours2:'Minggu: 09:00 - 18:00',instagram:'@araandzack'},
-  footer:{desc:'The Art of Premium Delight — menghadirkan kelezatan artisan dalam setiap gigitan.',copyright:'© 2025 Ara & Zack Bakehouse. All rights reserved.'}
+  footer:{desc:'The Art of Premium Delight — menghadirkan kelezatan artisan dalam setiap gigitan.',copyright:'© 2025 Ara & Zack Bakehouse. All rights reserved.'},
+  settings:{adminPassword:'admin123',staffPassword:'kasir123'}
 };
 
 let D;
@@ -663,6 +685,25 @@ async function uploadToSupabase(file, folder) {
   }
 }
 
+async function doUploadField(inputEl, targetInputId, folder) {
+  const f = inputEl.files[0];
+  if (!f) return;
+  toast('Memproses gambar...');
+  
+  const url = await uploadToSupabase(f, folder);
+  if (url) {
+    document.getElementById(targetInputId).value = url;
+    toast('Upload gambar berhasil!');
+  } else {
+    const r = new FileReader();
+    r.onload = e => {
+      document.getElementById(targetInputId).value = e.target.result;
+      toast('Gambar disiapkan (lokal).');
+    };
+    r.readAsDataURL(f);
+  }
+}
+
 async function handleAboutBannerUpload(input) {
   const f = input && input.files ? input.files[0] : null;
   if (!f) return;
@@ -700,6 +741,35 @@ function isVideoMedia(src) {
     value.startsWith('data:video/') ||
     /\.(mp4|webm|ogg|mov)(?:[?#].*)?$/i.test(value)
   );
+}
+
+async function handleHeroBannerUpload(input) {
+  const f = input && input.files ? input.files[0] : null;
+  if (!f) return;
+
+  const textInput = document.getElementById('f-himg');
+
+  if (!_sb) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      if(textInput) textInput.value = e.target.result;
+      toast('File berhasil dimuat secara lokal! Klik Simpan di bawah.');
+    };
+    reader.readAsDataURL(f);
+    return;
+  }
+
+  toast('Mengupload ke Supabase Storage...');
+  if (textInput) textInput.value = '';
+
+  const url = await uploadToSupabase(f, 'hero');
+  if (!url) {
+    toast(`Upload gagal. ${_lastStorageError || 'Coba lagi atau cek koneksi Supabase.'}`);
+    return;
+  }
+
+  if (textInput) textInput.value = url;
+  toast('Upload Hero Banner berhasil. Jangan lupa klik Simpan Hero Banner!');
 }
 
 function isVideoMimeType(type) {
@@ -937,6 +1007,9 @@ function updCustomerProfile() {
             <p class="text-xs font-semibold text-choco-900 truncate">${currentCustomer.name}</p>
             <p class="text-[10px] text-choco-400 truncate">${currentCustomer.phone}</p>
           </div>
+          <button onclick="openCustomerOrdersModal()" class="w-full flex items-center gap-2 px-4 py-2.5 text-xs text-choco-700 hover:bg-bakery-50 text-left font-medium transition-colors border-b border-bakery-50">
+            <iconify-icon icon="mdi:cart-outline" width="16"></iconify-icon>Pesanan Saya
+          </button>
           <button onclick="logoutCustomer()" class="w-full flex items-center gap-2 px-4 py-2.5 text-xs text-red-600 hover:bg-red-50 text-left font-medium transition-colors">
             <iconify-icon icon="mdi:logout" width="16"></iconify-icon>Keluar
           </button>
@@ -954,7 +1027,8 @@ function updCustomerProfile() {
             <p class="text-xs text-choco-400">${currentCustomer.phone}</p>
           </div>
         </div>
-        <button onclick="document.getElementById('s-mobmenu').classList.remove('open');logoutCustomer()" class="mt-2 py-2 px-4 text-xs font-bold tracking-wider uppercase text-red-500 border border-red-200 rounded-lg hover:bg-red-50 w-full flex items-center justify-center gap-1.5"><iconify-icon icon="mdi:logout" width="14"></iconify-icon>Keluar Akun</button>
+        <button onclick="document.getElementById('s-mobmenu').classList.remove('open');openCustomerOrdersModal()" class="mt-2 py-2 px-4 text-xs font-bold tracking-wider uppercase text-choco-700 border border-bakery-200 rounded-lg hover:bg-bakery-50 w-full flex items-center justify-center gap-1.5"><iconify-icon icon="mdi:cart-outline" width="14"></iconify-icon>Pesanan Saya</button>
+        <button onclick="document.getElementById('s-mobmenu').classList.remove('open');logoutCustomer()" class="py-2 px-4 text-xs font-bold tracking-wider uppercase text-red-500 border border-red-200 rounded-lg hover:bg-red-50 w-full flex items-center justify-center gap-1.5"><iconify-icon icon="mdi:logout" width="14"></iconify-icon>Keluar Akun</button>
       </div>
     `;
   }
@@ -1088,6 +1162,165 @@ function handleCustomerRegister(e) {
   setTimeout(() => {
     toggleCart();
   }, 400);
+}
+
+function openCustomerOrdersModal() {
+  if (!currentCustomer) return;
+  
+  let orders = [];
+  try {
+    const s = localStorage.getItem('arazack_orders');
+    if (s) orders = JSON.parse(s);
+  } catch(err) {}
+  
+  const myOrders = orders.filter(o => o.customer.email === currentCustomer.email);
+  
+  const box = document.getElementById('modal-box');
+  if (!box) return;
+  
+  let html = `
+    <div class="flex items-center justify-between p-6 border-b border-bakery-100">
+      <h3 class="font-serif text-xl text-choco-900 flex items-center gap-2"><iconify-icon icon="mdi:cart-outline" width="22" style="color:#B8860B"></iconify-icon>Pesanan Saya</h3>
+      <button onclick="closeModal()" class="w-9 h-9 rounded-full flex items-center justify-center hover:bg-bakery-50"><iconify-icon icon="mdi:close" width="20" style="color:#5C3D22"></iconify-icon></button>
+    </div>
+    <div class="p-6 max-h-[70vh] overflow-y-auto space-y-4">
+  `;
+  
+  if (myOrders.length === 0) {
+    html += `<div class="text-center py-10"><p class="text-choco-400">Belum ada riwayat pesanan.</p></div>`;
+  } else {
+    myOrders.forEach(o => {
+      let statusColor = 'bg-amber-100 text-amber-700';
+      if (o.status === 'Diproses') statusColor = 'bg-blue-100 text-blue-700';
+      else if (o.status === 'Dikirim') statusColor = 'bg-indigo-100 text-indigo-700';
+      else if (o.status === 'Selesai') statusColor = 'bg-green-100 text-green-700';
+      else if (o.status === 'Dibatalkan') statusColor = 'bg-red-100 text-red-700';
+      
+      html += `
+        <div class="border border-bakery-200 rounded-xl p-4">
+          <div class="flex justify-between items-start mb-2">
+            <div>
+              <p class="text-xs font-bold text-choco-900">${o.id}</p>
+              <p class="text-[10px] text-choco-400">${o.date}</p>
+            </div>
+            <span class="px-2 py-1 rounded text-[9px] font-bold uppercase tracking-wider ${statusColor}">${o.status}</span>
+          </div>
+          <div class="space-y-1 mb-3">
+            ${o.items.map(i => `<p class="text-[11px] text-choco-600">${i.qty}x ${i.name}</p>`).join('')}
+          </div>
+          <div class="flex items-center justify-between pt-3 border-t border-bakery-100">
+            <p class="text-xs font-bold text-choco-900">Rp ${o.total.toLocaleString('id-ID')}</p>
+            ${(o.status !== 'Selesai' && o.status !== 'Dibatalkan') ? `
+              <button onclick="receiveOrder('${o.id}')" class="px-3 py-1.5 bg-bakery-500 text-white text-[10px] font-bold tracking-wider uppercase rounded-lg hover:bg-bakery-600 transition-colors flex items-center gap-1"><iconify-icon icon="mdi:check-circle-outline"></iconify-icon>Barang Diterima</button>
+            ` : ''}
+          </div>
+        </div>
+      `;
+    });
+  }
+  
+  html += `</div>`;
+  box.innerHTML = html;
+  
+  document.getElementById('modal-bg').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+
+function receiveOrder(orderId) {
+  if (!confirm('Apakah Anda yakin pesanan telah diterima dengan baik?')) return;
+  
+  let orders = [];
+  try {
+    const s = localStorage.getItem('arazack_orders');
+    if (s) orders = JSON.parse(s);
+  } catch(err) {}
+  
+  const idx = orders.findIndex(o => o.id === orderId);
+  if (idx !== -1) {
+    orders[idx].status = 'Selesai';
+    localStorage.setItem('arazack_orders', JSON.stringify(orders));
+  }
+  
+  toast('Pesanan diselesaikan. Terima kasih!');
+  openCustomerTestiModal(orderId);
+}
+
+function setTestiRating(rating) {
+  document.getElementById('c-testi-rating').value = rating;
+  for(let i=1; i<=5; i++) {
+    const icon = document.getElementById('c-star-' + i);
+    if(i <= rating) {
+      icon.setAttribute('icon', 'mdi:star');
+      icon.style.color = '#D4A054';
+    } else {
+      icon.setAttribute('icon', 'mdi:star-outline');
+      icon.style.color = '#E8DDD2';
+    }
+  }
+}
+
+function openCustomerTestiModal(orderId) {
+  const box = document.getElementById('modal-box');
+  if (!box) return;
+  
+  box.innerHTML = `
+    <div class="flex items-center justify-between p-6 border-b border-bakery-100">
+      <h3 class="font-serif text-xl text-choco-900 flex items-center gap-2"><iconify-icon icon="mdi:comment-quote" width="22" style="color:#B8860B"></iconify-icon>Tinggalkan Ulasan</h3>
+      <button onclick="closeModal()" class="w-9 h-9 rounded-full flex items-center justify-center hover:bg-bakery-50"><iconify-icon icon="mdi:close" width="20" style="color:#5C3D22"></iconify-icon></button>
+    </div>
+    <form onsubmit="submitCustomerTesti(event)" class="p-6 space-y-5">
+      <div class="text-center">
+        <p class="text-xs text-choco-500 mb-3">Bagaimana rasa kue dan pelayanan kami?</p>
+        <input type="hidden" id="c-testi-rating" value="5">
+        <div class="flex justify-center gap-1 cursor-pointer">
+          ${[1,2,3,4,5].map(i => `<iconify-icon id="c-star-${i}" icon="mdi:star" width="32" style="color:#D4A054" onclick="setTestiRating(${i})"></iconify-icon>`).join('')}
+        </div>
+      </div>
+      <div>
+        <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Ceritakan Pengalaman Anda *</label>
+        <textarea id="c-testi-text" rows="4" required class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp text-sm resize-none" placeholder="Kuenya enak banget, manisnya pas..."></textarea>
+      </div>
+      <div>
+        <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Upload Foto (Opsional)</label>
+        <div class="flex gap-2">
+          <input id="c-testi-img" type="text" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp text-sm" placeholder="URL Foto" readonly>
+          <label class="flex-shrink-0 cursor-pointer inline-flex items-center justify-center px-4 py-3 bg-bakery-100 text-choco-700 hover:bg-bakery-200 rounded-xl transition-colors" title="Upload Foto">
+            <iconify-icon icon="mdi:camera-plus-outline" width="18"></iconify-icon>
+            <input type="file" accept="image/*" onchange="doUploadField(this, 'c-testi-img', 'testimonials')" class="hidden">
+          </label>
+        </div>
+      </div>
+      <button type="submit" class="w-full py-4 bg-choco-900 text-cream-100 text-[11px] font-bold tracking-[0.15em] uppercase rounded-xl hover:bg-choco-800 transition-colors flex items-center justify-center gap-2">
+        <iconify-icon icon="mdi:send-check" width="18"></iconify-icon>Kirim Testimoni
+      </button>
+    </form>
+  `;
+}
+
+function submitCustomerTesti(e) {
+  e.preventDefault();
+  const rating = parseInt(document.getElementById('c-testi-rating').value) || 5;
+  const text = document.getElementById('c-testi-text').value.trim();
+  const image = document.getElementById('c-testi-img').value.trim();
+  
+  if(!D.testimonials) D.testimonials = [];
+  
+  const newTesti = {
+    id: Date.now(),
+    name: currentCustomer.name,
+    location: 'Pelanggan Setia',
+    initials: getInitials(currentCustomer.name),
+    text: text,
+    rating: rating,
+    image: image
+  };
+  
+  D.testimonials.unshift(newTesti);
+  saveD();
+  
+  toast('Testimoni berhasil dikirim! Terima kasih banyak.');
+  closeModal();
+  buildStore();
 }
 
 function handleCheckout() {
@@ -1367,6 +1600,23 @@ function printReceiptPaper() {
 // ==================== VIEW SWITCH ====================
 let currentView='store';
 function goAdmin(){
+  const role = sessionStorage.getItem('arazack_admin_role');
+  if (!role) {
+    document.getElementById('admin-login-modal').classList.remove('hidden');
+    document.getElementById('admin-login-modal').classList.add('flex');
+    document.getElementById('admin-login-password').value = '';
+    document.getElementById('admin-login-password').focus();
+    return;
+  }
+  
+  if (role === 'staff') {
+    document.getElementById('admin-sidebar-name').textContent = 'Staff / Kasir';
+    document.getElementById('admin-sidebar-role').textContent = 'Staff';
+  } else {
+    document.getElementById('admin-sidebar-name').textContent = 'Admin';
+    document.getElementById('admin-sidebar-role').textContent = 'Super Admin';
+  }
+  
   updateDynamicBranding();
   document.getElementById('V-STORE').classList.add('hidden');
   document.getElementById('V-ADMIN').classList.remove('hidden');
@@ -1375,6 +1625,37 @@ function goAdmin(){
   buildAdminNav();
   showASection('dashboard');
   window.scrollTo(0,0);
+}
+
+function closeAdminLogin() {
+  document.getElementById('admin-login-modal').classList.add('hidden');
+  document.getElementById('admin-login-modal').classList.remove('flex');
+}
+
+function doAdminLogin() {
+  const pwd = document.getElementById('admin-login-password').value;
+  const trueAdminPwd = D.settings?.adminPassword || 'admin123';
+  const trueStaffPwd = D.settings?.staffPassword || 'kasir123';
+
+  if (pwd === trueAdminPwd) {
+    sessionStorage.setItem('arazack_admin_role', 'admin');
+    closeAdminLogin();
+    toast('Berhasil login sebagai Super Admin');
+    goAdmin();
+  } else if (pwd === trueStaffPwd) {
+    sessionStorage.setItem('arazack_admin_role', 'staff');
+    closeAdminLogin();
+    toast('Berhasil login sebagai Staff / Kasir');
+    goAdmin();
+  } else {
+    toast('Password salah!');
+  }
+}
+
+function logoutAdmin() {
+  sessionStorage.removeItem('arazack_admin_role');
+  toast('Berhasil keluar dari Admin');
+  goStore();
 }
 function goStore(){
   document.getElementById('V-ADMIN').classList.add('hidden');
@@ -1686,6 +1967,31 @@ function buildStore(){
           </div>
         </div>
       `;
+    } else if (layoutMode === 'clean') {
+      floatingCardsHtml = '';
+      heroInnerContent = `
+        <div class="max-w-4xl mx-auto text-center flex flex-col items-center justify-center">
+          <div class="anim-up flex flex-wrap items-center justify-center gap-3" style="animation-delay:.3s;animation-fill-mode:forwards;opacity:0">
+            <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 text-cream-200 text-[10px] font-bold tracking-[0.2em] uppercase" style="backdrop-filter:blur(12px)">
+              <iconify-icon icon="mdi:star-four-points" width="12" style="color:#D4A054"></iconify-icon>
+              <span class="editable-text" data-edit-path="hero.badge">${h.badge}</span>
+            </span>
+            ${statusBadge}
+          </div>
+          <h1 class="hero-title-container mt-8 anim-up" style="animation-delay:.5s;animation-fill-mode:forwards;opacity:0">
+            <span class="editable-text block font-serif hero-title-line font-light text-white leading-[0.95] tracking-tighter" data-edit-path="hero.line1">${h.line1}</span>
+            <span class="editable-text block font-serif hero-title-line font-semibold leading-[0.95] tracking-tighter gold-g mt-2" data-edit-path="hero.line2">${h.line2}</span>
+            <span class="editable-text block font-serif hero-title-line font-light text-white leading-[0.95] tracking-tighter mt-2" data-edit-path="hero.line3">${h.line3}</span>
+          </h1>
+          <p class="editable-text hero-desc-text hero-desc-container mt-8 text-cream-200 text-base sm:text-lg font-light leading-relaxed max-w-2xl mx-auto anim-up" style="animation-delay:.7s;animation-fill-mode:forwards;opacity:0" data-edit-path="hero.desc">${h.desc}</p>
+          <div class="hero-buttons-container mt-10 flex flex-wrap justify-center gap-4 anim-up" style="animation-delay:.9s;animation-fill-mode:forwards;opacity:0">
+            <a href="#s-products" class="group inline-flex items-center gap-3 px-8 py-4 bg-bakery-500 text-white text-[11px] font-bold tracking-[0.15em] uppercase rounded-lg hover:bg-bakery-600 transition-all">
+              <span class="editable-text" data-edit-path="hero.btn1">${h.btn1}</span>
+              <iconify-icon icon="mdi:arrow-right" width="16" class="transition-transform group-hover:translate-x-1"></iconify-icon>
+            </a>
+          </div>
+        </div>
+      `;
     } else {
       heroInnerContent = `
         <div class="max-w-3xl text-left">
@@ -1784,15 +2090,20 @@ function buildStore(){
       </style>
     `;
 
+    const isHeroVideo = isVideoMedia(h.image);
+    const heroMediaHtml = isHeroVideo
+      ? `<video src="${h.image}" class="w-full h-full object-cover select-none pointer-events-none" style="animation:fadeIn 2s ease-out" autoplay muted loop playsinline preload="auto" onloadedmetadata="this.play().catch(()=>{})"></video>`
+      : `<img src="${h.image}" alt="Hero" class="w-full h-full object-cover select-none pointer-events-none" style="animation:fadeIn 2s ease-out">`;
+
     html+=`
     ${fsStyle}
     <section id="s-home" class="relative w-full h-screen min-h-screen flex items-center justify-center overflow-hidden m-0 p-0">
     <div class="absolute inset-0 w-full h-full">
-      <img src="${h.image}" alt="Hero" class="w-full h-full object-cover select-none pointer-events-none" style="animation:fadeIn 2s ease-out">
+      ${heroMediaHtml}
       <div class="hero-grad absolute inset-0 w-full h-full"></div>
       <button onclick="openLiveImgModal('hero.image')" class="edit-img-btn absolute top-24 left-6 z-30 w-10 h-10 rounded-full bg-white/90 hover:bg-white text-choco-900 shadow-lg flex items-center justify-center hidden"><iconify-icon icon="mdi:camera" width="20"></iconify-icon></button>
     </div>
-    <div class="relative z-10 max-w-7xl mx-auto px-5 sm:px-8 w-full pt-16 sm:pt-20 ${pbClass}">
+    <div class="relative z-10 w-full 2xl:px-12 mx-auto px-5 sm:px-8 w-full pt-16 sm:pt-20 ${pbClass}">
       ${heroInnerContent}
     </div>
     ${floatingCardsHtml}
@@ -1801,7 +2112,7 @@ function buildStore(){
   </section>`;
 
   // CATEGORIES
-  html+=`<section class="py-20 sm:py-28 bg-cream-50"><div class="max-w-7xl mx-auto px-5 sm:px-8">
+  html+=`<section class="py-20 sm:py-28 bg-cream-50"><div class="w-full 2xl:px-12 mx-auto px-5 sm:px-8">
     <div class="text-center mb-16 reveal"><span class="inline-block text-[10px] font-bold tracking-[0.25em] uppercase text-bakery-500 mb-4">Kategori Kami</span><h2 class="font-serif text-3xl sm:text-5xl font-light text-choco-900 tracking-tight">Pilihan Kelezatan</h2></div>
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">${D.categories.map((cat,i)=>`
       <div class="reveal group cursor-pointer" style="transition-delay:${i*.1}s">
@@ -1818,7 +2129,7 @@ function buildStore(){
   </div></section>`;
 
   // PRODUCTS
-  html+=`<section id="s-products" class="py-20 sm:py-28 bg-white"><div class="max-w-7xl mx-auto px-5 sm:px-8">
+  html+=`<section id="s-products" class="py-20 sm:py-28 bg-white"><div class="w-full 2xl:px-12 mx-auto px-5 sm:px-8">
     <div class="text-center mb-12 reveal"><span class="inline-block text-[10px] font-bold tracking-[0.25em] uppercase text-bakery-500 mb-4">Menu Kami</span><h2 class="font-serif text-3xl sm:text-5xl font-light text-choco-900 tracking-tight">Produk Unggulan</h2></div>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">${activeProds.map((p,i)=>{
       const bc=badgeCls[p.badge]||'bg-bakery-100 text-bakery-600';
@@ -1851,7 +2162,7 @@ function buildStore(){
     ? `<video src="${a.image}" class="w-full h-full object-cover" autoplay muted loop playsinline preload="auto" onloadedmetadata="this.play().catch(()=>{})"></video>`
     : `<img src="${a.image}" alt="About" class="w-full h-full object-cover">`;
 
-  html+=`<section id="s-about" class="py-20 sm:py-28 bg-choco-900 text-white overflow-hidden"><div class="max-w-7xl mx-auto px-5 sm:px-8"><div class="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+  html+=`<section id="s-about" class="py-20 sm:py-28 bg-choco-900 text-white overflow-hidden"><div class="w-full 2xl:px-12 mx-auto px-5 sm:px-8"><div class="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
     <div class="reveal">
       <div class="relative">
         <div class="aspect-[4/5] rounded-2xl overflow-hidden relative">
@@ -1881,7 +2192,7 @@ function buildStore(){
       <div class="absolute inset-0 bg-choco-900/75" style="backdrop-filter:blur(4px)"></div>
       <button onclick="openLiveImgModal('offer.image')" class="edit-img-btn absolute top-6 left-6 z-30 w-10 h-10 rounded-full bg-white/90 hover:bg-white text-choco-900 shadow-lg flex items-center justify-center hidden"><iconify-icon icon="mdi:camera" width="20"></iconify-icon></button>
     </div>
-    <div class="relative z-10 max-w-4xl mx-auto px-5 sm:px-8 text-center reveal">
+    <div class="relative z-10 w-full 2xl:px-12 mx-auto px-5 sm:px-8 text-center reveal">
       <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-bakery-500/20 border border-bakery-500/30 text-bakery-300 text-[10px] font-bold tracking-[0.2em] uppercase mb-8"><iconify-icon icon="mdi:gift" width="14" style="color:#D4A054"></iconify-icon>Penawaran Spesial</span>
       <h2 class="font-serif text-3xl sm:text-5xl lg:text-6xl font-light text-white tracking-tight leading-tight">
         <span class="editable-text" data-edit-path="offer.title">${o.title}</span><br>
@@ -1898,11 +2209,12 @@ function buildStore(){
   }
 
   // TESTIMONIALS
-  html+=`<section id="s-testimonials" class="py-20 sm:py-28 bg-cream-50"><div class="max-w-7xl mx-auto px-5 sm:px-8">
+  html+=`<section id="s-testimonials" class="py-20 sm:py-28 bg-cream-50"><div class="w-full 2xl:px-12 mx-auto px-5 sm:px-8">
     <div class="text-center mb-16 reveal"><span class="inline-block text-[10px] font-bold tracking-[0.25em] uppercase text-bakery-500 mb-4">Testimoni</span><h2 class="font-serif text-3xl sm:text-5xl font-light text-choco-900 tracking-tight">Kata Mereka</h2></div>
     <div class="grid md:grid-cols-3 gap-6 sm:gap-8">${D.testimonials.map(t=>`<div class="reveal bg-white rounded-2xl p-8 border border-bakery-100 card-h">
       <div class="flex gap-1 mb-5">${Array.from({length:5},(_,i)=>i<Math.floor(t.rating)?'<iconify-icon icon="mdi:star" width="16" style="color:#D4A054"></iconify-icon>':i<t.rating?'<iconify-icon icon="mdi:star-half-full" width="16" style="color:#D4A054"></iconify-icon>':'<iconify-icon icon="mdi:star-outline" width="16" style="color:#E8DDD2"></iconify-icon>').join('')}</div>
       <p class="editable-text text-choco-600 font-light leading-relaxed italic" data-edit-path="testimonials.${t.id}.text">"${t.text}"</p>
+      ${t.image ? `<div class="mt-4 rounded-xl overflow-hidden"><img src="${t.image}" alt="Testimoni" class="w-full h-40 object-cover hover:scale-105 transition-transform duration-500"></div>` : ''}
       <div class="mt-6 flex items-center gap-3">
         <div class="w-10 h-10 rounded-full bg-bakery-200 flex items-center justify-center">
           <span class="editable-text text-sm font-semibold text-bakery-600" data-edit-path="testimonials.${t.id}.initials">${t.initials}</span>
@@ -1929,7 +2241,7 @@ function buildStore(){
   // CONTACT
   html+=`<section id="s-contact" class="relative py-20 sm:py-28 bg-white">
     ${editContactBtn}
-    <div class="max-w-7xl mx-auto px-5 sm:px-8"><div class="grid lg:grid-cols-2 gap-12 lg:gap-20">
+    <div class="w-full 2xl:px-12 mx-auto px-5 sm:px-8"><div class="grid lg:grid-cols-2 gap-12 lg:gap-20">
     <div class="reveal">
       <span class="inline-block text-[10px] font-bold tracking-[0.25em] uppercase text-bakery-500 mb-4">Hubungi Kami</span>
       <h2 class="font-serif text-3xl sm:text-5xl font-light text-choco-900 tracking-tight">Mari Bicara<br>Kelezatan</h2>
@@ -1974,7 +2286,7 @@ function buildStore(){
   </div></div></section>`;
 
   // FOOTER
-  html+=`<footer class="bg-choco-900 text-white pt-16 pb-8"><div class="max-w-7xl mx-auto px-5 sm:px-8">
+  html+=`<footer class="bg-choco-900 text-white pt-16 pb-8"><div class="w-full 2xl:px-12 mx-auto px-5 sm:px-8">
     <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-10 sm:gap-8 pb-12 border-b border-white/10">
       <div>
         <div class="flex items-center gap-2 mb-5">
@@ -2030,8 +2342,15 @@ const ASECTIONS=[
 let curA='dashboard';
 
 function buildAdminNav(){
+  const role = sessionStorage.getItem('arazack_admin_role') || 'staff';
   let html='',lastG='';
-  ASECTIONS.forEach(s=>{
+  
+  const allowedSections = ASECTIONS.filter(s => {
+    if (role === 'admin') return true;
+    return ['dashboard', 'products', 'categories', 'orders'].includes(s.id);
+  });
+
+  allowedSections.forEach(s=>{
     if(s.group!==lastG){html+=`<div class="px-4 ${lastG?'mt-6':''} mb-2"><span class="text-[9px] font-bold tracking-[0.2em] uppercase text-choco-300">${s.group}</span></div>`;lastG=s.group}
     html+=`<button onclick="showASection('${s.id}')" class="nav-item w-full flex items-center gap-3 px-5 py-2.5 text-sm text-choco-600${curA===s.id?' act':''}" data-nav="${s.id}"><iconify-icon icon="${s.icon}" width="20"></iconify-icon>${s.label}</button>`;
   });
@@ -2039,6 +2358,14 @@ function buildAdminNav(){
 }
 
 function showASection(id){
+  const role = sessionStorage.getItem('arazack_admin_role') || 'staff';
+  const allowed = role === 'admin' ? true : ['dashboard', 'products', 'categories', 'orders'].includes(id);
+  
+  if (!allowed) {
+    toast('Akses Ditolak: Anda tidak memiliki izin untuk menu ini.');
+    return;
+  }
+
   curA=id;
   buildAdminNav();
   const t={dashboard:['Dashboard','Selamat datang'],brand:['Logo & Brand','Kelola logo dan identitas toko'],products:['Produk','Kelola menu'],categories:['Kategori','Kelola kategori'],orders:['Pesanan','Kelola pesanan pelanggan'],hero:['Hero Banner','Edit tampilan utama'],about:['Tentang Kami','Edit informasi'],testimonials:['Testimoni','Kelola testimoni'],offer:['Penawaran','Edit banner'],contact:['Kontak','Edit kontak'],settings:['Pengaturan','Konfigurasi umum']};
@@ -2063,11 +2390,20 @@ function renderASection(id){
   else if(id==='settings')c.innerHTML=renderASettings();
   initAutoplayVideos(c);
   if (id === 'about') {
-    const aboutUploadInput = c.querySelector('input[type="file"][accept*="video/mp4"]');
+    const aboutUploadInput = c.querySelector('#about-upload-input');
     if (aboutUploadInput) {
       aboutUploadInput.removeAttribute('onchange');
       aboutUploadInput.onchange = function () {
         handleAboutBannerUpload(this);
+      };
+    }
+  }
+  if (id === 'hero') {
+    const heroUploadInput = c.querySelector('#hero-upload-input');
+    if (heroUploadInput) {
+      heroUploadInput.removeAttribute('onchange');
+      heroUploadInput.onchange = function () {
+        handleHeroBannerUpload(this);
       };
     }
   }
@@ -2329,6 +2665,11 @@ function renderHeroFloatingCardsAdmin(cards){
 
 function renderAHero(){
   const h=D.hero;
+  const isVid = isVideoMedia(h.image);
+  const previewHtml = isVid
+    ? `<video id="hero-banner-preview" src="${esc(h.image)}" class="w-full h-full object-cover" autoplay muted loop playsinline preload="auto"></video>`
+    : `<img id="hero-banner-preview" src="${esc(h.image)}" alt="Preview" class="w-full h-full object-cover">`;
+
   return `<div class="max-w-3xl space-y-6">
   <!-- Seksi Identitas & Logo Brand -->
   <div class="bg-white rounded-2xl p-6 sm:p-8 border border-bakery-100 space-y-5">
@@ -2374,11 +2715,39 @@ function renderAHero(){
     <button onclick="D.brand.name=document.getElementById('f-sbr').value;D.brand.tagline=document.getElementById('f-stg').value;D.brand.logo=document.getElementById('f-slogo-url').value;saveD();buildStore();toast('Pengaturan brand disimpan')" class="w-full py-3.5 bg-choco-900 text-cream-100 text-[11px] font-bold tracking-[0.15em] uppercase rounded-xl hover:bg-choco-800 flex items-center justify-center gap-2"><iconify-icon icon="mdi:content-save-outline" width="16"></iconify-icon>Simpan Brand</button>
   </div>
 
-  <!-- Seksi Konten Hero Banner -->
+  <!-- Preview Banner Hero -->
+  <div class="bg-white rounded-2xl p-6 border border-bakery-100">
+    <h3 class="font-semibold text-choco-900 mb-4 flex items-center gap-2">
+      <iconify-icon icon="mdi:image-frame" width="20" style="color:#B8860B"></iconify-icon>
+      Latar Belakang Hero (Video/Gambar Penuh)
+    </h3>
+
+    <div class="relative aspect-video rounded-xl overflow-hidden bg-bakery-100 border-2 border-dashed border-bakery-200 group" id="hero-banner-preview-wrap">
+      ${previewHtml}
+    </div>
+
+    <div class="mt-4 flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+      <input id="f-himg" type="text" value="${esc(h.image)}"
+        oninput="
+          const v=this.value.trim();
+          if(!v) return;
+          const wrap=document.getElementById('hero-banner-preview-wrap');
+          const isV=v.match(/\\.(mp4|webm|ogg)$/i) || v.startsWith('data:video');
+          wrap.innerHTML = isV ? \`<video id='hero-banner-preview' src='\${v}' class='w-full h-full object-cover' autoplay muted loop playsinline></video>\` : \`<img id='hero-banner-preview' src='\${v}' class='w-full h-full object-cover'>\`;
+        "
+        class="flex-1 w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp text-sm" placeholder="URL Gambar/Video atau Base64">
+      <label class="flex-shrink-0 cursor-pointer inline-flex items-center gap-2 px-4 py-3 bg-bakery-500 text-white hover:bg-bakery-600 text-xs font-bold tracking-wider uppercase rounded-xl transition-colors shadow-sm">
+        <iconify-icon icon="mdi:cloud-upload-outline" width="16"></iconify-icon>Upload File
+        <input type="file" accept="image/*,video/mp4,video/webm,video/ogg,video/quicktime" id="hero-upload-input" class="hidden">
+      </label>
+    </div>
+    ${_sb ? `<p class="text-[10px] text-green-600 mt-2 flex items-center gap-1"><iconify-icon icon="mdi:cloud-check" width="12"></iconify-icon>Supabase aktif — file diupload ke cloud, tidak terbatas ukuran.</p>` : `<p class="text-[10px] text-orange-500 mt-2 flex items-center gap-1"><iconify-icon icon="mdi:alert-circle-outline" width="12"></iconify-icon>Supabase belum diatur. Untuk video besar, upload mungkin gagal (storage penuh).</p>`}
+  </div>
+
   <div class="bg-white rounded-2xl p-6 sm:p-8 border border-bakery-100 space-y-5">
     <h3 class="font-semibold text-choco-900 flex items-center gap-2 border-b border-bakery-100 pb-3">
-      <iconify-icon icon="mdi:image-outline" width="20" style="color:#B8860B"></iconify-icon>
-      Konten Hero Banner
+      <iconify-icon icon="mdi:text-box-outline" width="20" style="color:#B8860B"></iconify-icon>
+      Konten Teks & Mode
     </h3>
     <div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Baris 1</label><input id="f-h1" type="text" value="${esc(h.line1)}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp"></div>
   <div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Baris 2 (Highlight)</label><input id="f-h2" type="text" value="${esc(h.line2)}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp"></div>
@@ -2390,6 +2759,7 @@ function renderAHero(){
     <select id="f-hlayout" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp text-sm">
       <option value="floating" ${(h.layoutMode || 'floating') === 'floating' ? 'selected' : ''}>Floating Bebas</option>
       <option value="sliding" ${(h.layoutMode || 'floating') === 'sliding' ? 'selected' : ''}>Slide Berjalan</option>
+      <option value="clean" ${(h.layoutMode || 'floating') === 'clean' ? 'selected' : ''}>Bersih (Hanya Video Penuh Tengah)</option>
     </select>
   </div>
   <div>
@@ -2421,14 +2791,15 @@ function renderAHero(){
     </div>
   </div>
   <div>
-    <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Gambar Hero Banner</label>
+    <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Gambar / Video Hero Banner</label>
     <div class="flex flex-col sm:flex-row gap-3 items-center">
-      <input id="f-himg" type="text" value="${esc(h.image)}" class="flex-1 w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp text-sm" placeholder="URL Gambar atau Base64">
+      <input id="f-himg" type="text" value="${esc(h.image)}" class="flex-1 w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp text-sm" placeholder="URL Gambar/Video atau Base64">
       <label class="flex-shrink-0 cursor-pointer inline-flex items-center gap-2 px-4 py-3 bg-bakery-100 text-choco-700 hover:bg-bakery-200 text-xs font-bold tracking-wider uppercase rounded-xl transition-colors">
         <iconify-icon icon="mdi:cloud-upload-outline" width="16"></iconify-icon>Upload File
-        <input type="file" accept="image/*" onchange="const f=this.files[0];if(f){const r=new FileReader();r.onload=e=>{document.getElementById('f-himg').value=e.target.result;toast('Gambar berhasil dimuat! Klik Simpan di bawah.')};r.readAsDataURL(f)}" class="hidden">
+        <input type="file" accept="image/*,video/mp4,video/webm,video/ogg,video/quicktime" id="hero-upload-input" class="hidden">
       </label>
     </div>
+    ${_sb ? `<p class="text-[10px] text-green-600 mt-2 flex items-center gap-1"><iconify-icon icon="mdi:cloud-check" width="12"></iconify-icon>Supabase aktif — file diupload ke cloud, tidak terbatas ukuran.</p>` : `<p class="text-[10px] text-orange-500 mt-2 flex items-center gap-1"><iconify-icon icon="mdi:alert-circle-outline" width="12"></iconify-icon>Supabase belum diatur. Untuk video besar, upload mungkin gagal (storage penuh).</p>`}
   </div>
   <div class="rounded-2xl border border-bakery-100 p-4 sm:p-5 bg-white space-y-4">
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -2658,6 +3029,20 @@ function renderASettings(){
       <p class="text-[10px] text-choco-400 mt-1">Masukkan URL gambar QRIS Anda atau klik tombol "Upload QRIS" untuk memuat file gambar secara langsung dari perangkat Anda.</p>
     </div>
     <button onclick="if(!D.settings)D.settings={};D.settings.qrisImage=document.getElementById('f-sqris').value;saveD();toast('QRIS Statis berhasil disimpan')" class="w-full py-3.5 bg-choco-900 text-cream-100 text-[11px] font-bold tracking-[0.15em] uppercase rounded-xl hover:bg-choco-800 flex items-center justify-center gap-2"><iconify-icon icon="mdi:content-save-outline" width="16"></iconify-icon>Simpan QRIS</button>
+  </div>
+  <div class="bg-white rounded-2xl p-6 sm:p-8 border border-bakery-100 space-y-5">
+    <h3 class="font-semibold text-choco-900 flex items-center gap-2"><iconify-icon icon="mdi:shield-account-outline" width="20" style="color:#B8860B"></iconify-icon>Pengaturan Akses Admin</h3>
+    <div>
+      <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Password Super Admin</label>
+      <input id="f-pwd-admin" type="text" value="${esc(D.settings?.adminPassword || 'admin123')}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp text-sm" placeholder="Password Admin">
+      <p class="text-[10px] text-choco-400 mt-1">Gunakan password ini untuk mendapat akses penuh (mengubah tampilan, produk, pengaturan, dll).</p>
+    </div>
+    <div>
+      <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Password Staff / Kasir</label>
+      <input id="f-pwd-staff" type="text" value="${esc(D.settings?.staffPassword || 'kasir123')}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp text-sm" placeholder="Password Staff">
+      <p class="text-[10px] text-choco-400 mt-1">Gunakan password ini untuk akses operasional (Pesanan, Produk, Kategori) tanpa hak ubah tampilan.</p>
+    </div>
+    <button onclick="if(!D.settings)D.settings={};D.settings.adminPassword=document.getElementById('f-pwd-admin').value;D.settings.staffPassword=document.getElementById('f-pwd-staff').value;saveD();toast('Password Akses Admin berhasil disimpan!')" class="w-full py-3.5 bg-choco-900 text-cream-100 text-[11px] font-bold tracking-[0.15em] uppercase rounded-xl hover:bg-choco-800 flex items-center justify-center gap-2"><iconify-icon icon="mdi:content-save-outline" width="16"></iconify-icon>Simpan Password</button>
   </div>
   <div class="bg-white rounded-2xl p-6 sm:p-8 border border-bakery-100 space-y-4">
     <h3 class="font-semibold text-choco-900">Data</h3>
@@ -3032,7 +3417,7 @@ function openProdModal(p=null){
     <div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Nama *</label><input id="mf-pn" type="text" value="${esc(p?.name)}" required class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp"></div>
     <div class="grid grid-cols-2 gap-4"><div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Harga *</label><input id="mf-pp" type="number" value="${p?.price||''}" required class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp"></div><div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Kategori *</label><select id="mf-pc" required class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp">${catOpts}</select></div></div>
     <div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Deskripsi *</label><textarea id="mf-pd" rows="3" required class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp resize-none">${esc(p?.desc)}</textarea></div>
-    <div class="grid grid-cols-2 gap-4"><div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">URL Gambar *</label><input id="mf-pi" type="text" value="${esc(p?.image)}" required class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp"></div><div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Badge</label><select id="mf-pb" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp"><option value="">Tanpa</option>${['Best Seller','New','Premium','Limited','Hot','Sale'].map(b=>`<option ${p?.badge===b?'selected':''}>${b}</option>`).join('')}</select></div></div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4"><div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Gambar *</label><div class="flex gap-2"><input id="mf-pi" type="text" value="${esc(p?.image)}" required class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp text-sm" placeholder="URL"><label class="flex-shrink-0 cursor-pointer inline-flex items-center justify-center px-4 py-3 bg-bakery-100 text-choco-700 hover:bg-bakery-200 rounded-xl transition-colors" title="Upload Gambar"><iconify-icon icon="mdi:cloud-upload-outline" width="18"></iconify-icon><input type="file" accept="image/*" onchange="doUploadField(this, 'mf-pi', 'products')" class="hidden"></label></div></div><div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Badge</label><select id="mf-pb" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp"><option value="">Tanpa</option>${['Best Seller','New','Premium','Limited','Hot','Sale'].map(b=>`<option ${p?.badge===b?'selected':''}>${b}</option>`).join('')}</select></div></div>
     <div class="grid grid-cols-2 gap-4"><div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Rating</label><input id="mf-pr" type="number" min="1" max="5" step="0.1" value="${p?.rating||4.5}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp"></div><div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Status</label><select id="mf-ps" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp"><option value="active" ${p?.status==='active'||!p?'selected':''}>Aktif</option><option value="draft" ${p?.status==='draft'?'selected':''}>Draft</option></select></div></div>
     <div class="flex gap-3"><button type="submit" class="flex-1 py-3.5 bg-choco-900 text-cream-100 text-[11px] font-bold tracking-[0.15em] uppercase rounded-xl hover:bg-choco-800">Simpan</button><button type="button" onclick="closeModal()" class="px-6 py-3.5 border border-bakery-200 text-choco-600 text-[11px] font-bold tracking-[0.15em] uppercase rounded-xl hover:bg-bakery-50">Batal</button></div>
   </form>`;
@@ -3053,7 +3438,7 @@ function openCatModal(c=null){
     <div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Nama *</label><input id="mf-cn" type="text" value="${esc(c?.name)}" required class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp"></div>
     <div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Slug</label><input id="mf-cs" type="text" value="${esc(c?.slug)}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp"></div>
     <div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Jumlah Varian</label><input id="mf-cc" type="text" value="${esc(c?.count)}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp"></div>
-    <div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">URL Gambar</label><input id="mf-ci" type="text" value="${esc(c?.image)}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp"></div>
+    <div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Gambar</label><div class="flex gap-2"><input id="mf-ci" type="text" value="${esc(c?.image)}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp text-sm" placeholder="URL Gambar"><label class="flex-shrink-0 cursor-pointer inline-flex items-center justify-center px-4 py-3 bg-bakery-100 text-choco-700 hover:bg-bakery-200 rounded-xl transition-colors" title="Upload Gambar"><iconify-icon icon="mdi:cloud-upload-outline" width="18"></iconify-icon><input type="file" accept="image/*" onchange="doUploadField(this, 'mf-ci', 'categories')" class="hidden"></label></div></div>
     <div class="flex gap-3"><button type="submit" class="flex-1 py-3.5 bg-choco-900 text-cream-100 text-[11px] font-bold tracking-[0.15em] uppercase rounded-xl hover:bg-choco-800">Simpan</button><button type="button" onclick="closeModal()" class="px-6 py-3.5 border border-bakery-200 text-choco-600 text-[11px] font-bold tracking-[0.15em] uppercase rounded-xl hover:bg-bakery-50">Batal</button></div>
   </form>`;
   document.getElementById('modal-bg').classList.remove('hidden');document.body.style.overflow='hidden';
@@ -3073,7 +3458,19 @@ function openTestiModal(t=null){
     <div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Nama *</label><input id="mf-tn" type="text" value="${esc(t?.name)}" required class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp"></div>
     <div class="grid grid-cols-2 gap-4"><div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Lokasi</label><input id="mf-tl" type="text" value="${esc(t?.location)}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp"></div><div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Inisial</label><input id="mf-ti" type="text" maxlength="2" value="${esc(t?.initials)}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp"></div></div>
     <div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Testimoni *</label><textarea id="mf-tt" rows="4" required class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp resize-none">${esc(t?.text)}</textarea></div>
-    <div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Rating</label><input id="mf-tr" type="number" min="1" max="5" step="0.5" value="${t?.rating||5}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp"></div>
+    <div class="grid grid-cols-2 gap-4">
+      <div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Rating</label><input id="mf-tr" type="number" min="1" max="5" step="0.5" value="${t?.rating||5}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp"></div>
+      <div>
+        <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Gambar</label>
+        <div class="flex gap-2">
+          <input id="mf-tim" type="text" value="${esc(t?.image)}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp" placeholder="URL Foto">
+          <label class="flex-shrink-0 cursor-pointer inline-flex items-center justify-center px-4 py-3 bg-bakery-100 text-choco-700 hover:bg-bakery-200 rounded-xl transition-colors" title="Upload Foto">
+            <iconify-icon icon="mdi:camera-plus-outline" width="18"></iconify-icon>
+            <input type="file" accept="image/*" onchange="doUploadField(this, 'mf-tim', 'testimonials')" class="hidden">
+          </label>
+        </div>
+      </div>
+    </div>
     <div class="flex gap-3"><button type="submit" class="flex-1 py-3.5 bg-choco-900 text-cream-100 text-[11px] font-bold tracking-[0.15em] uppercase rounded-xl hover:bg-choco-800">Simpan</button><button type="button" onclick="closeModal()" class="px-6 py-3.5 border border-bakery-200 text-choco-600 text-[11px] font-bold tracking-[0.15em] uppercase rounded-xl hover:bg-bakery-50">Batal</button></div>
   </form>`;
   document.getElementById('modal-bg').classList.remove('hidden');document.body.style.overflow='hidden';
@@ -3081,7 +3478,7 @@ function openTestiModal(t=null){
 function saveTesti(e){
   e.preventDefault();const id=gv('mf-tid');
   const nm=gv('mf-tn');
-  const t={id:id?parseInt(id):Date.now(),name:nm,location:gv('mf-tl'),initials:gv('mf-ti')||nm.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2),text:gv('mf-tt'),rating:parseFloat(gv('mf-tr'))||5};
+  const t={id:id?parseInt(id):Date.now(),name:nm,location:gv('mf-tl'),initials:gv('mf-ti')||nm.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2),text:gv('mf-tt'),rating:parseFloat(gv('mf-tr'))||5,image:gv('mf-tim')};
   if(id){const i=D.testimonials.findIndex(x=>x.id===parseInt(id));if(i!==-1)D.testimonials[i]=t}else D.testimonials.push(t);
   saveD();closeModal();renderASection('testimonials');toast(id?'Testimoni diperbarui':'Testimoni ditambahkan');
 }
