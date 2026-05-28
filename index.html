@@ -1440,10 +1440,10 @@ function processCheckout() {
     <div class="p-6 space-y-5 max-h-[80vh] overflow-y-auto">
       <div class="bg-cream-50 p-4 rounded-xl border border-bakery-100 space-y-2">
         <h4 class="text-[10px] font-bold tracking-[0.15em] uppercase text-bakery-600">Informasi Pemesan</h4>
-        <div class="grid grid-cols-2 gap-4 text-sm font-light text-choco-900">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-sm font-light text-choco-900">
           <div><p class="text-choco-400 text-xs">Nama:</p><p class="font-medium">${currentCustomer.name}</p></div>
           <div><p class="text-choco-400 text-xs">No. Telepon / WhatsApp:</p><p class="font-medium">${currentCustomer.phone}</p></div>
-          <div class="col-span-2"><p class="text-choco-400 text-xs">Email:</p><p class="font-medium">${currentCustomer.email}</p></div>
+          <div class="col-span-1 sm:col-span-2"><p class="text-choco-400 text-xs">Email:</p><p class="font-medium">${currentCustomer.email}</p></div>
         </div>
       </div>
       
@@ -1517,9 +1517,14 @@ function togglePaymentView(method) {
   }
 }
 
-function submitOrder() {
+async function submitOrder() {
   const total = cart.reduce((s,i)=>s+i.price*i.qty,0);
-  const orderId = 'ORD-' + Date.now();
+  
+  if (!D.settings) D.settings = {};
+  const prefix = D.settings.orderPrefix !== undefined ? D.settings.orderPrefix : 'ORD-';
+  const seq = D.settings.orderSeq || 1;
+  const orderId = prefix + seq.toString().padStart(3, '0');
+  D.settings.orderSeq = seq + 1; // Increment for next order
   const orderDate = new Date().toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
   const selectedMethod = document.querySelector('input[name="payment_method"]:checked')?.value || 'COD';
   
@@ -2237,8 +2242,8 @@ function buildStore(){
           <img src="${cat.image}" alt="${cat.name}" class="w-full h-full object-cover img-z">
           <button onclick="event.stopPropagation();openLiveImgModal('categories.${cat.id}.image')" class="edit-img-btn absolute top-3 right-3 z-30 w-8 h-8 rounded-full bg-white/90 hover:bg-white text-choco-900 shadow-md flex items-center justify-center hidden"><iconify-icon icon="mdi:camera" width="16"></iconify-icon></button>
           <div class="absolute inset-0 bg-gradient-to-t from-choco-900/80 via-transparent to-transparent"></div>
-          <div class="absolute bottom-0 left-0 right-0 p-5">
-            <h3 class="editable-text font-serif text-lg text-white" data-edit-path="categories.${cat.id}.name">${cat.name}</h3>
+          <div class="absolute bottom-0 left-0 right-0 p-4">
+            <h3 class="editable-text font-serif text-md text-white" data-edit-path="categories.${cat.id}.name">${cat.name}</h3>
             <span class="editable-text text-[10px] tracking-[0.2em] uppercase text-cream-300" data-edit-path="categories.${cat.id}.count">${cat.count}</span>
           </div>
         </div>
@@ -2248,16 +2253,16 @@ function buildStore(){
   // PRODUCTS
   html+=`<section id="s-products" class="py-20 sm:py-28 bg-white"><div class="w-full 2xl:px-12 mx-auto px-5 sm:px-8">
     <div class="text-center mb-12 reveal"><span class="inline-block text-[10px] font-bold tracking-[0.25em] uppercase text-bakery-500 mb-4">Menu Kami</span><h2 class="font-serif text-3xl sm:text-5xl font-light text-choco-900 tracking-tight">Produk Unggulan</h2></div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">${activeProds.map((p,i)=>{
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-8">${activeProds.map((p,i)=>{
       const bc=badgeCls[p.badge]||'bg-bakery-100 text-bakery-600';
       return `<div class="reveal card-h bg-white rounded-2xl overflow-hidden border border-bakery-100 group" style="transition-delay:${i*.08}s">
         <div class="relative aspect-[4/3] overflow-hidden bg-bakery-50">
           <img src="${p.image}" alt="${p.name}" class="w-full h-full object-cover img-z">
           <button onclick="event.stopPropagation();openLiveImgModal('products.${p.id}.image')" class="edit-img-btn absolute top-3 right-3 z-30 w-8 h-8 rounded-full bg-white/90 hover:bg-white text-choco-900 shadow-md flex items-center justify-center hidden"><iconify-icon icon="mdi:camera" width="16"></iconify-icon></button>
-          <span class="editable-text absolute top-4 left-4 px-3 py-1.5 text-[9px] font-bold tracking-[0.15em] uppercase rounded-full ${bc} ${p.badge ? '' : 'hidden live-edit-show'}" data-edit-path="products.${p.id}.badge">${p.badge || 'BADGE'}</span>
+          <span class="editable-text absolute top-3 left-3 px-3 py-1 text-[9px] font-bold tracking-[0.15em] uppercase rounded-full ${bc} ${p.badge ? '' : 'hidden live-edit-show'}" data-edit-path="products.${p.id}.badge">${p.badge || 'BADGE'}</span>
           <div class="absolute inset-0 bg-choco-900/0 group-hover:bg-choco-900/20 transition-all duration-500 flex items-center justify-center"><button onclick="addCart(${p.id})" class="opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-500 px-6 py-3 bg-white rounded-xl text-[11px] font-bold tracking-[0.15em] uppercase text-choco-900 hover:bg-bakery-500 hover:text-white shadow-lg flex items-center gap-2"><iconify-icon icon="mdi:cart-plus" width="16"></iconify-icon>Tambah</button></div>
         </div>
-        <div class="p-5 sm:p-6">
+        <div class="p-4 sm:p-5">
           <div class="flex items-center gap-1 mb-2">
             <iconify-icon icon="mdi:star" width="14" style="color:#D4A054"></iconify-icon>
             <span class="editable-text text-xs font-medium text-choco-600" data-edit-path="products.${p.id}.rating">${p.rating}</span>
@@ -2403,7 +2408,7 @@ function buildStore(){
     <div class="reveal" style="transition-delay:.2s">
       <form onsubmit="event.preventDefault();toast('Pesan berhasil dikirim!')" class="bg-cream-50 rounded-2xl p-8 sm:p-10 border border-bakery-100"><div class="space-y-5">
         <div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Nama</label><input type="text" required class="w-full px-4 py-3 rounded-lg border border-bakery-200 bg-white text-choco-900 font-light inp" placeholder="Nama Anda"></div>
-        <div class="grid grid-cols-2 gap-4"><div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Email</label><input type="email" required class="w-full px-4 py-3 rounded-lg border border-bakery-200 bg-white text-choco-900 font-light inp" placeholder="email@contoh.com"></div><div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Telepon</label><input type="tel" class="w-full px-4 py-3 rounded-lg border border-bakery-200 bg-white text-choco-900 font-light inp" placeholder="+62..."></div></div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4"><div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Email</label><input type="email" required class="w-full px-4 py-3 rounded-lg border border-bakery-200 bg-white text-choco-900 font-light inp" placeholder="email@contoh.com"></div><div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Telepon</label><input type="tel" class="w-full px-4 py-3 rounded-lg border border-bakery-200 bg-white text-choco-900 font-light inp" placeholder="+62..."></div></div>
         <div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Pesan</label><textarea rows="4" required class="w-full px-4 py-3 rounded-lg border border-bakery-200 bg-white text-choco-900 font-light inp resize-none" placeholder="Ceritakan kebutuhan Anda..."></textarea></div>
         <button type="submit" class="w-full py-4 bg-choco-900 text-cream-100 text-[11px] font-bold tracking-[0.2em] uppercase rounded-lg hover:bg-choco-800 transition-colors flex items-center justify-center gap-2"><iconify-icon icon="mdi:send" width="16"></iconify-icon>Kirim Pesan</button>
       </div></form>
@@ -2449,14 +2454,14 @@ window.addEventListener('scroll',()=>{
   if(window.scrollY>80){n.style.background='rgba(255,253,247,0.92)';n.style.borderBottom='1px solid rgba(227,214,195,0.3)';n.style.boxShadow='0 1px 20px rgba(44,30,6,0.06)'}
   else{n.style.background='transparent';n.style.borderBottom='none';n.style.boxShadow='none'}
 });
-
 // ==================== ADMIN ====================
 const ASECTIONS=[
   {id:'dashboard',icon:'mdi:view-dashboard-outline',label:'Dashboard',group:'Utama'},
   {id:'brand',icon:'mdi:storefront-outline',label:'Logo & Brand',group:'Utama'},
   {id:'products',icon:'mdi:cake-variant-outline',label:'Produk',group:'Utama'},
-  {id:'categories',icon:'mdi:folder-outline',label:'Kategori',group:'Utama'},
-  {id:'orders',icon:'mdi:cart-outline',label:'Pesanan',group:'Transaksi'},
+  {id:'categories',icon:'mdi:shape-outline',label:'Kategori',group:'Katalog'},
+  {id:'orders',icon:'mdi:clipboard-text-outline',label:'Pesanan',group:'Transaksi'},
+  {id:'kds',icon:'mdi:chef-hat',label:'KDS (Dapur)',group:'Transaksi'},
   {id:'hero',icon:'mdi:image-outline',label:'Hero Banner',group:'Konten'},
   {id:'about',icon:'mdi:information-outline',label:'Tentang Kami',group:'Konten'},
   {id:'testimonials',icon:'mdi:comment-quote-outline',label:'Testimoni',group:'Konten'},
@@ -2472,7 +2477,7 @@ function buildAdminNav(){
   
   const allowedSections = ASECTIONS.filter(s => {
     if (role === 'admin') return true;
-    return ['dashboard', 'products', 'categories', 'orders'].includes(s.id);
+    return ['dashboard', 'products', 'categories', 'orders', 'kds'].includes(s.id);
   });
 
   allowedSections.forEach(s=>{
@@ -2484,7 +2489,7 @@ function buildAdminNav(){
 
 function showASection(id){
   const role = sessionStorage.getItem('arazack_admin_role') || 'staff';
-  const allowed = role === 'admin' ? true : ['dashboard', 'products', 'categories', 'orders'].includes(id);
+  const allowed = role === 'admin' ? true : ['dashboard', 'products', 'categories', 'orders', 'kds'].includes(id);
   
   if (!allowed) {
     toast('Akses Ditolak: Anda tidak memiliki izin untuk menu ini.');
@@ -2493,7 +2498,7 @@ function showASection(id){
 
   curA=id;
   buildAdminNav();
-  const t={dashboard:['Dashboard','Selamat datang'],brand:['Logo & Brand','Kelola logo dan identitas toko'],products:['Produk','Kelola menu'],categories:['Kategori','Kelola kategori'],orders:['Pesanan','Kelola pesanan pelanggan'],hero:['Hero Banner','Edit tampilan utama'],about:['Tentang Kami','Edit informasi'],testimonials:['Testimoni','Kelola testimoni'],offer:['Penawaran','Edit banner'],contact:['Kontak','Edit kontak'],settings:['Pengaturan','Konfigurasi umum']};
+  const t={dashboard:['Dashboard','Selamat datang'],brand:['Logo & Brand','Kelola logo dan identitas toko'],products:['Produk','Kelola menu'],categories:['Kategori','Kelola kategori'],orders:['Pesanan','Kelola pesanan pelanggan'],kds:['KDS Dapur','Monitor produksi pesanan'],hero:['Hero Banner','Edit tampilan utama'],about:['Tentang Kami','Edit informasi'],testimonials:['Testimoni','Kelola testimoni'],offer:['Penawaran','Edit banner'],contact:['Kontak','Edit kontak'],settings:['Pengaturan','Konfigurasi umum']};
   document.getElementById('a-title').textContent=t[id]?.[0]||id;
   document.getElementById('a-sub').textContent=t[id]?.[1]||'';
   if(window.innerWidth<1024){document.getElementById('a-side').classList.remove('open');document.getElementById('a-overlay').classList.add('hidden')}
@@ -2507,6 +2512,7 @@ function renderASection(id){
   else if(id==='products')c.innerHTML=renderAProds();
   else if(id==='categories')c.innerHTML=renderACats();
   else if(id==='orders')c.innerHTML=renderAOrders();
+  else if(id==='kds')c.innerHTML=renderAKDS();
   else if(id==='hero')c.innerHTML=renderAHero();
   else if(id==='about')c.innerHTML=renderAAbout();
   else if(id==='testimonials')c.innerHTML=renderATesti();
@@ -2712,6 +2718,101 @@ Mohon konfirmasi pesanan saya. Terima kasih!`;
 
   const url = `https://api.whatsapp.com/send?phone=${D.contact.whatsapp}&text=${encodeURIComponent(msg)}`;
   window.open(url, '_blank');
+}
+
+let kdsInterval = null;
+let lastKdsOrderCount = 0;
+
+function renderAKDS() {
+  const orders = D.orders || [];
+  const activeOrders = orders.filter(o => o.status === 'Pending' || o.status === 'Diproses');
+  
+  // Play sound if new order arrived
+  if (activeOrders.length > lastKdsOrderCount) {
+    try {
+      const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+      audio.play().catch(()=>{});
+    } catch(e) {}
+  }
+  lastKdsOrderCount = activeOrders.length;
+
+  let html = `
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-xl font-serif text-choco-900 flex items-center gap-2"><iconify-icon icon="mdi:chef-hat" width="24" class="text-bakery-500"></iconify-icon> Kitchen Display System (KDS)</h2>
+      <div class="text-sm font-medium text-choco-500 bg-choco-50 px-4 py-2 rounded-lg flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+        Live Auto-Refresh
+      </div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+  `;
+
+  if (activeOrders.length === 0) {
+    html += `<div class="col-span-full py-20 text-center text-choco-300 bg-white rounded-xl border border-bakery-100">
+      <iconify-icon icon="mdi:check-circle-outline" width="64" class="mb-4 opacity-50"></iconify-icon>
+      <p class="text-lg">Dapur bersih! Belum ada pesanan aktif.</p>
+    </div>`;
+  } else {
+    // Sort oldest first (since D.orders is newest first, we reverse for kitchen queue)
+    const queue = [...activeOrders].reverse();
+    queue.forEach(o => {
+      const isCooking = o.status === 'Diproses';
+      const borderClass = isCooking ? 'border-bakery-400 shadow-md ring-2 ring-bakery-100' : 'border-bakery-200';
+      const headerClass = isCooking ? 'bg-bakery-500 text-white' : 'bg-bakery-50 text-choco-800';
+      
+      html += `
+        <div class="bg-white rounded-xl border ${borderClass} overflow-hidden flex flex-col transition-all">
+          <div class="px-4 py-3 ${headerClass} flex justify-between items-center">
+            <div>
+              <div class="font-bold text-lg">${o.id}</div>
+              <div class="text-xs opacity-90">${o.date}</div>
+            </div>
+            <div class="text-right">
+              <div class="text-[10px] uppercase tracking-wider opacity-80 font-bold mb-1">Status</div>
+              <div class="text-sm font-bold flex items-center gap-1">
+                ${isCooking ? '<iconify-icon icon="mdi:fire" width="16"></iconify-icon>' : '<iconify-icon icon="mdi:clock-outline" width="16"></iconify-icon>'}
+                ${o.status}
+              </div>
+            </div>
+          </div>
+          <div class="p-4 flex-1">
+            <div class="text-sm text-choco-500 font-medium mb-3 pb-2 border-b border-bakery-100 truncate">
+              👤 ${o.customer?.name || 'Pelanggan'}
+            </div>
+            <ul class="space-y-3">
+              ${o.items.map(i => `
+                <li class="flex items-start gap-3">
+                  <span class="w-8 h-8 rounded-lg bg-bakery-100 text-bakery-600 font-bold flex items-center justify-center shrink-0">${i.qty}x</span>
+                  <span class="text-choco-900 font-medium leading-tight mt-1">${i.name}</span>
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+          <div class="p-4 bg-gray-50 border-t border-gray-100 flex gap-2">
+            ${isCooking 
+              ? `<button onclick="updateOrderStatus('${o.id}', 'Selesai')" class="w-full py-3 bg-green-500 hover:bg-green-600 text-white font-bold rounded-lg flex justify-center items-center gap-2"><iconify-icon icon="mdi:check-bold" width="20"></iconify-icon> Selesai Masak</button>`
+              : `<button onclick="updateOrderStatus('${o.id}', 'Diproses')" class="w-full py-3 bg-bakery-500 hover:bg-bakery-600 text-white font-bold rounded-lg flex justify-center items-center gap-2"><iconify-icon icon="mdi:fire" width="20"></iconify-icon> Mulai Proses</button>`
+            }
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  html += `</div>`;
+  
+  // Setup auto refresh
+  if (kdsInterval) clearInterval(kdsInterval);
+  kdsInterval = setInterval(() => {
+    if (curA === 'kds') {
+      const c = document.getElementById('a-content');
+      if (c) c.innerHTML = renderAKDS();
+    } else {
+      clearInterval(kdsInterval);
+    }
+  }, 10000);
+
+  return html;
 }
 
 function renderACats(){
@@ -3214,6 +3315,26 @@ Terima kasih banyak atas pesanannya! Dapur kami sedang memproses pesanan kue lez
         <p class="text-[10px] text-choco-400 mt-1">Gunakan password ini untuk akses operasional (Pesanan, Produk, Kategori) tanpa hak ubah tampilan.</p>
       </div>
       <button onclick="if(!D.settings)D.settings={};D.settings.adminPassword=document.getElementById('f-pwd-admin').value;D.settings.staffPassword=document.getElementById('f-pwd-staff').value;saveD();toast('Password Akses Admin berhasil disimpan!')" class="w-full py-3.5 bg-choco-900 text-cream-100 text-[11px] font-bold tracking-[0.15em] uppercase rounded-xl hover:bg-choco-800 flex items-center justify-center gap-2"><iconify-icon icon="mdi:content-save-outline" width="16"></iconify-icon>Simpan Password</button>
+    </div>
+  </details>
+
+  <details class="bg-white rounded-2xl border border-bakery-100 group">
+    <summary class="p-5 sm:p-6 font-semibold text-choco-900 cursor-pointer list-none flex items-center justify-between hover:bg-cream-50/50 rounded-2xl transition-colors">
+      <span class="flex items-center gap-3"><iconify-icon icon="mdi:format-list-numbered" width="22" style="color:#B8860B"></iconify-icon>Penomoran Pesanan</span>
+      <iconify-icon icon="mdi:chevron-down" width="20" class="text-choco-400 group-open:rotate-180 transition-transform"></iconify-icon>
+    </summary>
+    <div class="p-6 pt-2 border-t border-bakery-50 space-y-5">
+      <div>
+        <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Awalan (Prefix) Pesanan</label>
+        <input id="f-ord-prefix" type="text" value="${esc(D.settings?.orderPrefix !== undefined ? D.settings.orderPrefix : 'ORD-')}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp text-sm" placeholder="Contoh: ORD-">
+        <p class="text-[10px] text-choco-400 mt-1">Kode depan untuk nomor pesanan Anda.</p>
+      </div>
+      <div>
+        <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Nomor Urut Selanjutnya</label>
+        <input id="f-ord-seq" type="number" value="${D.settings?.orderSeq || 1}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp text-sm" placeholder="1">
+        <p class="text-[10px] text-choco-400 mt-1">Angka ini otomatis ditambahkan ke ID pesanan dan akan otomatis bertambah (contoh: 1 menjadi 001).</p>
+      </div>
+      <button onclick="if(!D.settings)D.settings={};D.settings.orderPrefix=document.getElementById('f-ord-prefix').value;D.settings.orderSeq=parseInt(document.getElementById('f-ord-seq').value)||1;saveD();toast('Pengaturan nomor pesanan berhasil disimpan!')" class="w-full py-3.5 bg-choco-900 text-cream-100 text-[11px] font-bold tracking-[0.15em] uppercase rounded-xl hover:bg-choco-800 flex items-center justify-center gap-2"><iconify-icon icon="mdi:content-save-outline" width="16"></iconify-icon>Simpan Penomoran</button>
     </div>
   </details>
 
