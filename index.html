@@ -1893,6 +1893,24 @@ function openProdDetail(id) {
   document.body.style.overflow = 'hidden';
 }
 
+function slideCategory(id, dir) {
+  const imgEl = document.getElementById('cat-img-' + id);
+  if (!imgEl) return;
+  const images = JSON.parse(imgEl.getAttribute('data-images') || '[]');
+  if (images.length <= 1) return;
+  let idx = parseInt(imgEl.getAttribute('data-idx') || '0', 10);
+  idx += dir;
+  if (idx < 0) idx = images.length - 1;
+  if (idx >= images.length) idx = 0;
+  
+  imgEl.setAttribute('data-idx', idx);
+  imgEl.style.opacity = '0.5';
+  setTimeout(() => {
+    imgEl.src = images[idx];
+    imgEl.style.opacity = '1';
+  }, 150);
+}
+
 function closeProdDetail() {
   document.getElementById('prod-detail-modal').classList.add('hidden');
   document.body.style.overflow = '';
@@ -1945,7 +1963,7 @@ function renderProdDetailModal(p) {
   const badgeHtml = p.badge ? `<span class="absolute top-4 left-4 px-3 py-1 text-[10px] font-bold tracking-widest uppercase rounded-full bg-bakery-500 text-white shadow-md z-10">${p.badge}</span>` : '';
 
   box.innerHTML = `
-    <div class="w-full md:w-1/2 relative bg-bakery-50 min-h-[300px] md:min-h-full flex items-center justify-center select-none group cursor-pointer" onclick="if(${hasGallery}) nextProdImage(1)">
+    <div class="w-full md:w-1/2 relative bg-bakery-50 min-h-[300px] md:min-h-full flex items-center justify-center select-none group">
       ${badgeHtml}
       <img id="pd-main-img" src="${_currentGallery[0]}" class="w-full h-full object-cover absolute inset-0 transition-opacity duration-300">
       ${galleryHtml}
@@ -2421,18 +2439,31 @@ function buildStore(){
   // CATEGORIES
   html+=`<section class="py-20 sm:py-28 bg-cream-50"><div class="w-full 2xl:px-12 mx-auto px-5 sm:px-8">
     <div class="text-center mb-16 reveal"><span class="inline-block text-[10px] font-bold tracking-[0.25em] uppercase text-bakery-500 mb-4">Kategori Kami</span><h2 class="font-serif text-3xl sm:text-5xl font-light text-choco-900 tracking-tight">Pilihan Kelezatan</h2></div>
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">${D.categories.map((cat,i)=>`
-      <div class="reveal group cursor-pointer" style="transition-delay:${i*.1}s">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">${D.categories.map((cat,i)=>{
+      const hasCatGallery = cat.gallery && cat.gallery.length > 0;
+      const allCatImages = [cat.image, ...(cat.gallery || [])].filter(v => v);
+      return `
+      <div class="reveal group" style="transition-delay:${i*.1}s">
         <div class="relative aspect-[3/4] rounded-2xl overflow-hidden bg-bakery-100">
-          <img src="${cat.image}" alt="${cat.name}" class="w-full h-full object-cover img-z">
+          <img id="cat-img-${cat.id}" src="${cat.image}" data-images='${JSON.stringify(allCatImages)}' data-idx="0" alt="${cat.name}" class="w-full h-full object-cover img-z transition-opacity duration-300">
           <button onclick="event.stopPropagation();openLiveImgModal('categories.${cat.id}.image')" class="edit-img-btn absolute top-3 right-3 z-30 w-8 h-8 rounded-full bg-white/90 hover:bg-white text-choco-900 shadow-md flex items-center justify-center hidden"><iconify-icon icon="mdi:camera" width="16"></iconify-icon></button>
-          <div class="absolute inset-0 bg-gradient-to-t from-choco-900/80 via-transparent to-transparent"></div>
-          <div class="absolute bottom-0 left-0 right-0 p-4">
-            <h3 class="editable-text font-serif text-md text-white" data-edit-path="categories.${cat.id}.name">${cat.name}</h3>
-            <span class="editable-text text-[10px] tracking-[0.2em] uppercase text-cream-300" data-edit-path="categories.${cat.id}.count">${cat.count}</span>
+          
+          ${hasCatGallery ? `
+            <div class="absolute inset-y-0 left-0 flex items-center px-1 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+              <button onclick="event.stopPropagation();slideCategory(${cat.id}, -1)" class="w-8 h-8 rounded-full bg-white/80 hover:bg-white text-choco-900 shadow-md flex items-center justify-center backdrop-blur"><iconify-icon icon="mdi:chevron-left" width="20"></iconify-icon></button>
+            </div>
+            <div class="absolute inset-y-0 right-0 flex items-center px-1 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+              <button onclick="event.stopPropagation();slideCategory(${cat.id}, 1)" class="w-8 h-8 rounded-full bg-white/80 hover:bg-white text-choco-900 shadow-md flex items-center justify-center backdrop-blur"><iconify-icon icon="mdi:chevron-right" width="20"></iconify-icon></button>
+            </div>
+          ` : ''}
+
+          <div class="absolute inset-0 bg-gradient-to-t from-choco-900/80 via-transparent to-transparent pointer-events-none"></div>
+          <div class="absolute bottom-0 left-0 right-0 p-4 pointer-events-none">
+            <h3 class="editable-text font-serif text-md text-white pointer-events-auto" data-edit-path="categories.${cat.id}.name">${cat.name}</h3>
+            <span class="editable-text text-[10px] tracking-[0.2em] uppercase text-cream-300 pointer-events-auto" data-edit-path="categories.${cat.id}.count">${cat.count}</span>
           </div>
         </div>
-      </div>`).join('')}</div>
+      </div>`}).join('')}</div>
   </div></section>`;
 
   // PRODUCTS
@@ -2638,6 +2669,25 @@ function buildStore(){
     igBtn.classList.add('hidden');
   }
   initAutoplayVideos(document.getElementById('store-content'));
+
+  // Auto-slide for category galleries
+  if (window.catSlideInterval) clearInterval(window.catSlideInterval);
+  window.catSlideInterval = setInterval(() => {
+    document.querySelectorAll('img[id^="cat-img-"]').forEach(imgEl => {
+      const images = JSON.parse(imgEl.getAttribute('data-images') || '[]');
+      if (images.length > 1) {
+        let idx = parseInt(imgEl.getAttribute('data-idx') || '0', 10);
+        idx++;
+        if (idx >= images.length) idx = 0;
+        imgEl.setAttribute('data-idx', idx);
+        imgEl.style.opacity = '0.5';
+        setTimeout(() => {
+          imgEl.src = images[idx];
+          imgEl.style.opacity = '1';
+        }, 150);
+      }
+    });
+  }, 3000);
 
   // Re-observe reveals
   setTimeout(()=>{document.querySelectorAll('#store-content .reveal').forEach(el=>obs.observe(el))},100);
@@ -4029,14 +4079,35 @@ function openCatModal(c=null){
     <div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Nama *</label><input id="mf-cn" type="text" value="${esc(c?.name)}" required class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp"></div>
     <div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Slug</label><input id="mf-cs" type="text" value="${esc(c?.slug)}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp"></div>
     <div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Jumlah Varian</label><input id="mf-cc" type="text" value="${esc(c?.count)}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp"></div>
-    <div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Gambar</label><div class="flex gap-2"><input id="mf-ci" type="text" value="${esc(c?.image)}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp text-sm" placeholder="URL Gambar"><label class="flex-shrink-0 cursor-pointer inline-flex items-center justify-center px-4 py-3 bg-bakery-100 text-choco-700 hover:bg-bakery-200 rounded-xl transition-colors" title="Upload Gambar"><iconify-icon icon="mdi:cloud-upload-outline" width="18"></iconify-icon><input type="file" accept="image/*" onchange="doUploadField(this, 'mf-ci', 'categories')" class="hidden"></label></div></div>
+    <div><label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500 mb-2">Gambar Utama</label><div class="flex gap-2"><input id="mf-ci" type="text" value="${esc(c?.image)}" class="w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp text-sm" placeholder="URL Gambar"><label class="flex-shrink-0 cursor-pointer inline-flex items-center justify-center px-4 py-3 bg-bakery-100 text-choco-700 hover:bg-bakery-200 rounded-xl transition-colors" title="Upload Gambar"><iconify-icon icon="mdi:cloud-upload-outline" width="18"></iconify-icon><input type="file" accept="image/*" onchange="doUploadField(this, 'mf-ci', 'categories')" class="hidden"></label></div></div>
+    
+    <div class="border-t border-bakery-100 pt-4 mt-2">
+      <div class="flex items-center justify-between mb-2">
+        <label class="block text-[11px] font-bold tracking-[0.15em] uppercase text-choco-500">Galeri Tambahan (Opsional)</label>
+        <button type="button" onclick="addProdGalleryField()" class="text-[10px] bg-bakery-100 hover:bg-bakery-200 text-choco-700 px-3 py-1.5 rounded-lg font-bold tracking-widest uppercase transition-colors">+ Tambah Foto</button>
+      </div>
+      <div id="mf-gallery-container" class="space-y-2">
+        ${(c?.gallery||[]).map((gUrl) => `
+          <div class="flex gap-2 mf-gallery-item">
+            <input type="text" value="${esc(gUrl)}" class="mf-gallery-input w-full px-4 py-3 rounded-xl border border-bakery-200 bg-cream-50 text-choco-900 inp text-sm" placeholder="URL Foto Tambahan">
+            <label class="flex-shrink-0 cursor-pointer inline-flex items-center justify-center px-4 py-3 bg-bakery-100 text-choco-700 hover:bg-bakery-200 rounded-xl transition-colors" title="Upload Gambar">
+              <iconify-icon icon="mdi:cloud-upload-outline" width="18"></iconify-icon>
+              <input type="file" accept="image/*" onchange="doUploadGalleryField(this)" class="hidden">
+            </label>
+            <button type="button" onclick="this.parentElement.remove()" class="flex-shrink-0 px-4 py-3 bg-red-50 text-red-500 hover:bg-red-100 rounded-xl transition-colors"><iconify-icon icon="mdi:delete-outline" width="18"></iconify-icon></button>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
     <div class="flex gap-3"><button type="submit" class="flex-1 py-3.5 bg-choco-900 text-cream-100 text-[11px] font-bold tracking-[0.15em] uppercase rounded-xl hover:bg-choco-800">Simpan</button><button type="button" onclick="closeModal()" class="px-6 py-3.5 border border-bakery-200 text-choco-600 text-[11px] font-bold tracking-[0.15em] uppercase rounded-xl hover:bg-bakery-50">Batal</button></div>
   </form>`;
   document.getElementById('modal-bg').classList.remove('hidden');document.body.style.overflow='hidden';
 }
 function saveCat(e){
   e.preventDefault();const id=gv('mf-cid');
-  const c={id:id?parseInt(id):Date.now(),name:gv('mf-cn'),slug:gv('mf-cs')||gv('mf-cn').toLowerCase().replace(/\s+/g,'-'),count:gv('mf-cc'),image:gv('mf-ci')};
+  const gallery = Array.from(document.querySelectorAll('.mf-gallery-input')).map(inp=>inp.value).filter(v=>v.trim()!=='');
+  const c={id:id?parseInt(id):Date.now(),name:gv('mf-cn'),slug:gv('mf-cs')||gv('mf-cn').toLowerCase().replace(/\s+/g,'-'),count:gv('mf-cc'),image:gv('mf-ci'),gallery};
   if(id){const i=D.categories.findIndex(x=>x.id===parseInt(id));if(i!==-1)D.categories[i]=c}else D.categories.push(c);
   saveD();closeModal();renderASection('categories');toast(id?'Kategori diperbarui':'Kategori ditambahkan');
 }
